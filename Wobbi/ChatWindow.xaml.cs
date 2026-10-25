@@ -9,6 +9,9 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Wobbi.Services;
 using Wobbi.Models;
+using System.Net;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace Wobbi;
 
@@ -97,14 +100,48 @@ public partial class ChatWindow : Window
             // Show Wobbi's speech bubble
             _onReply(reply.Text);
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
         {
-            thinkingMessage.Text =
-                "Oh no! My brain got tangled " +
-                "in some stardust. 💜";
+            if (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                thinkingMessage.Text =
+                    "I can't find my little AI model! 🥺💜 " +
+                    "Try running: ollama pull qwen3:4b-instruct";
+            }
+            else
+            {
+                thinkingMessage.Text =
+                    "Psst... my brain seems to be offline! 💤 " +
+                    "Could you check if Ollama is running?";
+            }
 
             Debug.WriteLine(ex);
         }
+        catch (OperationCanceledException ex)
+        {
+            thinkingMessage.Text =
+                "My brain is taking a little too long " +
+                "to think! 🌌 Try again in a moment.";
+
+            Debug.WriteLine(ex);
+        }
+        catch (JsonException ex)
+        {
+            thinkingMessage.Text =
+                "Oops! My thoughts got all tangled up! 💜 " +
+                "Could you try asking me again?";
+
+            Debug.WriteLine(ex);
+        }
+        catch (Exception ex)
+        {
+            thinkingMessage.Text =
+                "Something unexpected happened! 🥺 " +
+                "My little brain needs a checkup.";
+
+            Debug.WriteLine(ex);
+        }
+
         finally
         {
             _isSending = false;
