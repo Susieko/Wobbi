@@ -5,21 +5,9 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Wobbi.Models;
 
 namespace Wobbi.Services;
-
-public enum WobbiMood
-{
-    Neutral,
-    Happy,
-    Excited,
-    Curious
-}
-
-public record WobbiAiReply(
-    string Text,
-    WobbiMood Mood
-);
 
 public class WobbiAiService
 {

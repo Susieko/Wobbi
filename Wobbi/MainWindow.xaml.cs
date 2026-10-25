@@ -7,6 +7,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Wobbi.Services;
 using System.Windows.Controls;
+using Wobbi.Models;
+using Wobbi.Animations;
 namespace Wobbi;
 
 public partial class MainWindow : Window
@@ -63,7 +65,7 @@ public partial class MainWindow : Window
         _blinkTimer.Interval = TimeSpan.FromSeconds(3);
         _blinkTimer.Tick += BlinkTimer_Tick;
         _blinkTimer.Start();
-        _happyResetTimer.Interval = TimeSpan.FromSeconds(1.4);
+        _happyResetTimer.Interval = TimeSpan.FromSeconds(2.0);
         _happyResetTimer.Tick += HappyResetTimer_Tick;
     }
 
@@ -197,13 +199,20 @@ public partial class MainWindow : Window
         }
     }
 
+
     private void Exit_Click(
         object sender,
         RoutedEventArgs e)
     {
+        // Stop Wobbi's active timers
         _blinkTimer.Stop();
-        Close();
+        _happyResetTimer.Stop();
+
+        // Close the whole application,
+        // including the chat window
+        Application.Current.Shutdown();
     }
+
 
 
     private void OpenChat_Click(
@@ -259,205 +268,69 @@ public partial class MainWindow : Window
         _chatWindow.Show();
     }
 
+
     private void ReactToMood(WobbiMood mood)
     {
-        // Respect Wobbi's sleep mode
-        if (_isSleeping)
-            return;
-
-
-        if (mood == WobbiMood.Curious)
-        {
-            var tilt = new DoubleAnimation
-            {
-                From = -4,
-                To = 4,
-                Duration = TimeSpan.FromMilliseconds(180),
-                AutoReverse = true,
-                RepeatBehavior = new RepeatBehavior(2),
-
-                // Return to the original rotation afterward!
-                FillBehavior = FillBehavior.Stop,
-
-                EasingFunction = new SineEase
-                {
-                    EasingMode = EasingMode.EaseInOut
-                }
-            };
-
-            _curiousTilt.BeginAnimation(
-                RotateTransform.AngleProperty,
-                tilt
-            );
-
-            return;
-        }
-
-        if (mood == WobbiMood.Neutral)
-            return;
-
-        // Excited = higher and more hops
-        bool excited = mood == WobbiMood.Excited;
-
-        var bounce = new DoubleAnimation
-        {
-            From = 0,
-            To = excited ? -28 : -16,
-            Duration = TimeSpan.FromMilliseconds(180),
-            AutoReverse = true,
-            RepeatBehavior = new RepeatBehavior(
-                excited ? 2 : 1
-            ),
-            EasingFunction = new SineEase
-            {
-                EasingMode = EasingMode.EaseInOut
-            }
-        };
-
-        _petBounce.BeginAnimation(
-            TranslateTransform.YProperty,
-            bounce
+        WobbiAnimator.ReactToMood(
+            mood,
+            _petBounce,
+            _curiousTilt,
+            _isSleeping
         );
-
-
     }
+
+
 
     private void UpdateBreathing()
     {
-        // Sleeping = slower and deeper breathing
-        double minScale = _isSleeping ? 0.98 : 1.0;
-        double maxScale = _isSleeping ? 1.075 : 1.04;
-
-        double seconds = _isSleeping ? 2.4 : 1.3;
-
-        var animation = new DoubleAnimation
-        {
-            From = minScale,
-            To = maxScale,
-
-            Duration = TimeSpan.FromSeconds(seconds),
-
-            AutoReverse = true,
-            RepeatBehavior = RepeatBehavior.Forever,
-
-            EasingFunction = new SineEase
-            {
-                EasingMode = EasingMode.EaseInOut
-            }
-        };
-
-        _breathing.BeginAnimation(
-            ScaleTransform.ScaleYProperty,
-            animation
+        WobbiAnimator.UpdateBreathing(
+            _breathing,
+            _isSleeping
         );
     }
 
 
     private void StartSleepParticles()
     {
-        SleepParticles.Visibility = Visibility.Visible;
-
-        // Stagger the particles so they don't move together
-        AnimateSleepZ(SleepZ1, 0);
-        AnimateSleepZ(SleepZ2, 0.8);
-        AnimateSleepZ(SleepZ3, 1.6);
-    }
-
-    private static void AnimateSleepZ(
-        TextBlock z,
-        double delay)
-    {
-        var duration = TimeSpan.FromSeconds(2.6);
-        var startDelay = TimeSpan.FromSeconds(delay);
-
-        // Each Z grows a little as it floats
-        var scale = new ScaleTransform(0.65, 0.65);
-        var movement = new TranslateTransform();
-
-        var transforms = new TransformGroup();
-        transforms.Children.Add(scale);
-        transforms.Children.Add(movement);
-
-        z.RenderTransform = transforms;
-        z.RenderTransformOrigin = new Point(0.5, 0.5);
-
-        // Float upward
-        var floatUp = new DoubleAnimation
-        {
-            From = 15,
-            To = -90,
-            Duration = duration,
-            BeginTime = startDelay,
-            RepeatBehavior = RepeatBehavior.Forever
-        };
-
-        movement.BeginAnimation(
-            TranslateTransform.YProperty,
-            floatUp
+        WobbiAnimator.StartSleepParticles(
+            SleepParticles,
+            SleepZ1,
+            SleepZ2,
+            SleepZ3
         );
-
-        // Grow while floating
-        var grow = new DoubleAnimation
-        {
-            From = 0.65,
-            To = 1.3,
-            Duration = duration,
-            BeginTime = startDelay,
-            RepeatBehavior = RepeatBehavior.Forever
-        };
-
-        scale.BeginAnimation(
-            ScaleTransform.ScaleXProperty, grow);
-
-        scale.BeginAnimation(
-            ScaleTransform.ScaleYProperty, grow);
-
-        // Fade in, float, then disappear
-        var fade = new DoubleAnimationUsingKeyFrames
-        {
-            Duration = duration,
-            BeginTime = startDelay,
-            RepeatBehavior = RepeatBehavior.Forever
-        };
-
-        fade.KeyFrames.Add(
-            new DiscreteDoubleKeyFrame(
-                0, KeyTime.FromTimeSpan(TimeSpan.Zero)));
-
-        fade.KeyFrames.Add(
-            new LinearDoubleKeyFrame(
-                1, KeyTime.FromTimeSpan(
-                    TimeSpan.FromSeconds(0.4))));
-
-        fade.KeyFrames.Add(
-            new LinearDoubleKeyFrame(
-                1, KeyTime.FromTimeSpan(
-                    TimeSpan.FromSeconds(1.6))));
-
-        fade.KeyFrames.Add(
-            new LinearDoubleKeyFrame(
-                0, KeyTime.FromTimeSpan(duration)));
-
-        z.BeginAnimation(
-            UIElement.OpacityProperty, fade);
     }
 
     private void StopSleepParticles()
     {
-        SleepParticles.Visibility = Visibility.Collapsed;
-
-        foreach (TextBlock z in new[]
-        {
-        SleepZ1, SleepZ2, SleepZ3
-    })
-        {
-            z.BeginAnimation(
-                UIElement.OpacityProperty, null);
-
-            z.Opacity = 0;
-            z.RenderTransform = Transform.Identity;
-        }
+        WobbiAnimator.StopSleepParticles(
+            SleepParticles,
+            SleepZ1,
+            SleepZ2,
+            SleepZ3
+        );
     }
+
+
+    private void StartHeartParticles()
+    {
+        WobbiAnimator.StartHeartParticles(
+            HeartParticles,
+            Heart1,
+            Heart2,
+            Heart3
+        );
+    }
+
+    private void StopHeartParticles()
+    {
+        WobbiAnimator.StopHeartParticles(
+            HeartParticles,
+            Heart1,
+            Heart2,
+            Heart3
+        );
+    }
+
 
     private void ShowHappyFace()
     {
@@ -485,111 +358,6 @@ public partial class MainWindow : Window
         StopHeartParticles();
         ReturnToIdleFace();
     }
-
-    private void StartHeartParticles()
-    {
-        HeartParticles.Visibility = Visibility.Visible;
-
-        AnimateHeart(Heart1, 0.0, -18);
-        AnimateHeart(Heart2, 0.25, 0);
-        AnimateHeart(Heart3, 0.5, 18);
-    }
-
-    private static void AnimateHeart(
-        TextBlock heart,
-        double delay,
-        double driftX)
-    {
-        var duration = TimeSpan.FromSeconds(1.4);
-        var startDelay = TimeSpan.FromSeconds(delay);
-
-        var scale = new ScaleTransform(0.7, 0.7);
-        var movement = new TranslateTransform();
-
-        var transforms = new TransformGroup();
-        transforms.Children.Add(scale);
-        transforms.Children.Add(movement);
-
-        heart.RenderTransform = transforms;
-        heart.RenderTransformOrigin = new Point(0.5, 0.5);
-
-        var floatUp = new DoubleAnimation
-        {
-            From = 8,
-            To = -95,
-            Duration = duration,
-            BeginTime = startDelay,
-            FillBehavior = FillBehavior.Stop
-        };
-
-        movement.BeginAnimation(
-            TranslateTransform.YProperty,
-            floatUp
-        );
-
-        var drift = new DoubleAnimation
-        {
-            From = 0,
-            To = driftX,
-            Duration = duration,
-            BeginTime = startDelay,
-            FillBehavior = FillBehavior.Stop
-        };
-
-        movement.BeginAnimation(
-            TranslateTransform.XProperty,
-            drift
-        );
-
-        var grow = new DoubleAnimation
-        {
-            From = 0.7,
-            To = 1.15,
-            Duration = duration,
-            BeginTime = startDelay,
-            FillBehavior = FillBehavior.Stop
-        };
-
-        scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
-        scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
-
-        var fade = new DoubleAnimationUsingKeyFrames
-        {
-            Duration = duration,
-            BeginTime = startDelay
-        };
-
-        fade.KeyFrames.Add(
-            new DiscreteDoubleKeyFrame(
-                0, KeyTime.FromTimeSpan(TimeSpan.Zero)));
-
-        fade.KeyFrames.Add(
-            new LinearDoubleKeyFrame(
-                1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.18))));
-
-        fade.KeyFrames.Add(
-            new LinearDoubleKeyFrame(
-                1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.85))));
-
-        fade.KeyFrames.Add(
-            new LinearDoubleKeyFrame(
-                0, KeyTime.FromTimeSpan(duration)));
-
-        heart.BeginAnimation(UIElement.OpacityProperty, fade);
-    }
-
-    private void StopHeartParticles()
-    {
-        HeartParticles.Visibility = Visibility.Collapsed;
-
-        foreach (TextBlock heart in new[] { Heart1, Heart2, Heart3 })
-        {
-            heart.BeginAnimation(UIElement.OpacityProperty, null);
-            heart.Opacity = 0;
-            heart.RenderTransform = Transform.Identity;
-        }
-    }
-
 
     private void ShowSpeechBubble(string message)
     {
@@ -652,6 +420,5 @@ public partial class MainWindow : Window
             animation
         );
     }
-
 
 }
