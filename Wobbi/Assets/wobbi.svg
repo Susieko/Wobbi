@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 930 700" width="930" height="700" role="img" aria-labelledby="wobbiTitle wobbiDesc">
+<title id="wobbiTitle">Wobbi, the little cosmic dango</title>
+<desc id="wobbiDesc">A little cosmic-purple round dango with long rounded oval eyes, rosy cheeks, subtle stars and a three-link lilac S-shaped chain tail attached low behind his body.</desc>
+<defs>
+  <linearGradient id="body" x1="0" y1="0" x2="0.22" y2="1">
+    <stop offset="0" stop-color="#262758"/><stop offset="0.45" stop-color="#4C4897"/><stop offset="0.78" stop-color="#A08AE8"/><stop offset="1" stop-color="#E5CBF0"/>
+  </linearGradient>
+  <linearGradient id="chain" x1="0" y1="0" x2="0.7" y2="1">
+    <stop offset="0" stop-color="#F1D9FF"/><stop offset="0.55" stop-color="#C9A9F4"/><stop offset="1" stop-color="#9E7BD8"/>
+  </linearGradient>
+  <radialGradient id="charm" cx="30%" cy="23%" r="85%"><stop stop-color="#7774CA"/><stop offset="0.55" stop-color="#41458F"/><stop offset="1" stop-color="#29295C"/></radialGradient>
+  <radialGradient id="blush"><stop stop-color="#FFB5D7"/><stop offset="0.7" stop-color="#F5A6D0"/><stop offset="1" stop-color="#EC91C9" stop-opacity=".75"/></radialGradient>
+  <filter id="groundBlur" x="-25%" width="150%" y="-100%" height="300%"><feGaussianBlur stdDeviation="8"/></filter>
+  <!-- Reusable true hollow chain ring, with two separate visible contours. -->
+  <g id="ring">
+    <path d="M -30 0 A 30 26 0 1 0 30 0 A 30 26 0 1 0 -30 0 Z M -16 0 A 16 12 0 1 1 16 0 A 16 12 0 1 1 -16 0 Z" fill="url(#chain)" fill-rule="evenodd" stroke="#393273" stroke-width="4.2" stroke-linejoin="round"/>
+    <path d="M -23 -14 Q -10 -25 9 -18" fill="none" stroke="#FAEAFF" stroke-width="4.5" opacity=".9" stroke-linecap="round"/>
+  </g>
+  <g id="tinyStar"><path d="M 0 -12 Q 2 -3 10 -2 Q 3 1 1 11 Q -1 3 -10 0 Q -2 -3 0 -12 Z" fill="#FFF1C2"/></g>
+</defs>
+
+<!-- All details are editable vector shapes. Transparent canvas. -->
+<ellipse id="ground-shadow" cx="383" cy="565" rx="198" ry="17" fill="#8B74CE" opacity=".17" filter="url(#groundBlur)"/>
+
+<!-- Tail emerges from Wobbi’s little bum. Three interlocked vector rings form a soft S. -->
+<g id="tail" aria-label="lilac chain tail">
+  <g id="tail-ring-1" transform="translate(560 532) rotate(-32)"><use href="#ring"/></g>
+  <g id="tail-ring-2" transform="translate(607 565) rotate(35)"><use href="#ring"/></g>
+  <g id="tail-ring-3" transform="translate(655 538) rotate(-32)"><use href="#ring"/></g>
+  <g id="star-charm" transform="translate(712 562)">
+    <circle r="37" fill="url(#charm)" stroke="#24244F" stroke-width="5.5"/>
+    <path d="M0 -24 L7 -9 L24 -7 L11 5 L15 23 L0 14 L-15 23 L-11 5 L-24 -7 L-7 -9 Z" fill="#FFF0BA"/>
+    <circle cx="-19" cy="19" r="3.6" fill="#F9E9FF"/>
+    <circle cx="23" cy="15" r="2.7" fill="#CEBCFF"/>
+    <ellipse cx="-17" cy="-20" rx="7" ry="3" transform="rotate(-30 -17 -20)" fill="#F9EDFF" opacity=".65"/>
+  </g>
+</g>
+
+<g id="blob" aria-label="Wobbi round body, round eyes and blush">
+<!-- Body only reduced another 9%, anchored at the same sitting baseline; eyes and cheeks never scale with it. -->
+  <g id="body-shell" transform="translate(34.2 44.1) scale(.91)">
+  <path id="round-body" d="M 380 258 C 484 257 555 308 585 393 C 607 457 587 507 526 537 C 483 556 425 550 379 551 C 323 551 277 555 234 535 C 175 509 153 459 176 394 C 207 307 274 258 380 258 Z" fill="url(#body)" stroke="#222452" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- No upper rim shine: keep the body soft and matte at the top. -->
+  <path d="M 251 531 Q 377 550 504 531" stroke="#FFEAF4" stroke-width="7" fill="none" opacity=".11" stroke-linecap="round"/>
+  <!-- Minimal cosmic marks, away from the face. -->
+  <g id="cosmic-marks">
+    <use href="#tinyStar" transform="translate(531 314) scale(1.15)"/>
+    <circle cx="518" cy="344" r="2.8" fill="#E9D7FF"/><circle cx="550" cy="375" r="3.4" fill="#FFF8DC"/>
+    <circle cx="216" cy="361" r="2.6" fill="#FBE5FF"/><circle cx="235" cy="382" r="2" fill="#E9D8FF"/>
+    <circle cx="496" cy="485" r="2.6" fill="#FFF6D5"/><circle cx="262" cy="483" r="2.7" fill="#F4DEFF"/>
+    <use href="#tinyStar" transform="translate(251 461) scale(.53)"/>
+    <use href="#tinyStar" transform="translate(546 462) scale(.46)"/>
+  </g>
+
+  </g>
+
+  <!-- Long rounded dango eyes and blushies are in a single cursor-tracking group. -->
+  <g id="face">
+    <g id="face-tracking">
+      <g id="open-eyes">
+        <ellipse id="eye-left" cx="329" cy="395" rx="12" ry="26" fill="#151637"/>
+        <ellipse id="eye-right" cx="437" cy="395" rx="12" ry="26" fill="#151637"/>
+      </g>
+      <ellipse id="blush-left" cx="273" cy="428" rx="22" ry="15" fill="url(#blush)" opacity=".94"/>
+      <ellipse id="blush-right" cx="495" cy="428" rx="22" ry="15" fill="url(#blush)" opacity=".94"/>
+    </g>
+    <g id="sleep-eyes" visibility="hidden" fill="none" stroke="#171938" stroke-width="5.5" stroke-linecap="round">
+      <path d="M 315 394 Q 329 407 342 394"/><path d="M 424 394 Q 438 407 451 394"/>
+    </g>
+  </g>
+</g>
+<g id="sleep-zzz" visibility="hidden" fill="#8271D1" font-family="system-ui, sans-serif" font-weight="700">
+  <text x="558" y="242" font-size="21">z</text><text x="579" y="217" font-size="27">z</text><text x="604" y="185" font-size="34">Z</text>
+</g>
+</svg>
