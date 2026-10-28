@@ -1,58 +1,89 @@
 ﻿
 using System;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Wobbi.Models;
-using System.Windows;
-using System.Windows.Controls;
+
 
 namespace Wobbi.Animations;
 
 public static class WobbiAnimator
 {
-    // React to moods chosen by Wobbi's AI
     public static void ReactToMood(
         WobbiMood mood,
         TranslateTransform bounce,
         RotateTransform tilt,
-        bool isSleeping)
+        bool isSleeping,
+        WobbiPersonality personality)
     {
-        // Never disturb a sleeping Wobbi
+        // AI-driven reactions should never interrupt sleep.
         if (isSleeping)
             return;
 
         switch (mood)
         {
-            case WobbiMood.Curious:
-                PlayCuriousTilt(tilt);
-                break;
-
             case WobbiMood.Happy:
-                PlayBounce(bounce, 16, 1);
+                double happyHeight = personality switch
+                {
+                    WobbiPersonality.Calm => 6,
+                    WobbiPersonality.Balanced => 16,
+                    WobbiPersonality.Playful => 22,
+                    _ => 16
+                };
+                int happyHops = personality == WobbiPersonality.Playful ? 2 : 1;
+                PlayBounce(bounce, happyHeight, happyHops);
                 break;
 
             case WobbiMood.Excited:
-                PlayBounce(bounce, 28, 2);
+                double excitedHeight = personality switch
+                {
+                    WobbiPersonality.Calm => 12,
+                    WobbiPersonality.Balanced => 28,
+                    WobbiPersonality.Playful => 35,
+                    _ => 28
+                };
+                int excitedHops = personality switch
+                {
+                    WobbiPersonality.Calm => 1,
+                    WobbiPersonality.Balanced => 2,
+                    WobbiPersonality.Playful => 3,
+                    _ => 2
+                };
+                PlayBounce(bounce, excitedHeight, excitedHops);
+                break;
+
+            case WobbiMood.Curious:
+                double angle = personality switch
+                {
+                    WobbiPersonality.Calm => 2,
+                    WobbiPersonality.Balanced => 4,
+                    WobbiPersonality.Playful => 6,
+                    _ => 4
+                };
+                PlayCuriousTilt(tilt, angle);
                 break;
 
             case WobbiMood.Neutral:
             default:
-                // Just keep floating!
+                // Neutral Wobbi keeps floating and breathing.
                 break;
         }
     }
 
     // Wobbi tilts when curious
+
     private static void PlayCuriousTilt(
-        RotateTransform tilt)
+        RotateTransform tilt,
+        double angle)
     {
         var animation = new DoubleAnimation
         {
-            From = -4,
-            To = 4,
-            Duration =
-                TimeSpan.FromMilliseconds(180),
+            From = -angle,
+            To = angle,
 
+            Duration = TimeSpan.FromMilliseconds(180),
             AutoReverse = true,
             RepeatBehavior = new RepeatBehavior(2),
             FillBehavior = FillBehavior.Stop,
@@ -69,11 +100,12 @@ public static class WobbiAnimator
         );
     }
 
+
     // Wobbi bounces when happy or excited
     private static void PlayBounce(
-        TranslateTransform bounce,
-        double height,
-        int repetitions)
+            TranslateTransform bounce,
+            double height,
+            int repetitions)
     {
         var animation = new DoubleAnimation
         {
@@ -410,6 +442,4 @@ public static class WobbiAnimator
             heart.RenderTransform = Transform.Identity;
         }
     }
-
-
 }

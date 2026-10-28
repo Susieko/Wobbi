@@ -20,17 +20,20 @@ public partial class ChatWindow : Window
     private readonly WobbiAiService _ai = new();
     private readonly Action<WobbiMood> _onMood;
     private readonly Action<string> _onReply;
+    private readonly Action<bool> _onThinking;
 
     private bool _isSending = false;
 
     public ChatWindow(
         Action<WobbiMood> onMood,
-        Action<string> onReply)
+        Action<string> onReply,
+        Action<bool> onThinking)
     {
         InitializeComponent();
 
         _onMood = onMood;
         _onReply = onReply;
+        _onThinking = onThinking;
 
         AddMessage(
             "Wobbi",
@@ -40,6 +43,12 @@ public partial class ChatWindow : Window
 
         MessageInput.Focus();
     }
+
+    public void SetPersonality(WobbiPersonality personality)
+    {
+        _ai.SetPersonality(personality);
+    }
+
 
     private async void Send_Click(
         object sender,
@@ -87,9 +96,15 @@ public partial class ChatWindow : Window
 
         try
         {
+            // Show ... above Wobbi while waiting for the local AI.
+            _onThinking(true);
+
             // Ask our local Ollama brain
             WobbiAiReply reply =
                 await _ai.ReplyAsync(message);
+
+            // Stop dots before showing the real speech bubble.
+            _onThinking(false);
 
             // Replace thinking text with real answer
             thinkingMessage.Text = reply.Text;
@@ -144,6 +159,9 @@ public partial class ChatWindow : Window
 
         finally
         {
+            // Also hide the dots when Ollama is offline or returns an error.
+            // SetThinkingBubble ignores a redundant stop after a successful reply.
+            _onThinking(false);
             _isSending = false;
 
             MessageInput.IsEnabled = true;
