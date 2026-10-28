@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	<ApplicationIcon>Assets\Wobbi.ico</ApplicationIcon>
+	  <Version>0.3.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,10 +20,15 @@
   </ItemGroup>
 
   <ItemGroup>
+	<Resource Include="Assets\Wobbi.ico" />
     <Resource Include="Assets\wobbi-happy.svg" />
     <Resource Include="Assets\wobbi-sleep.svg" />
     <Resource Include="Assets\wobbi-blink.svg" />
     <Resource Include="Assets\wobbi.svg" />
+	  <Resource Include="Assets\Lavender\wobbi.svg" />
+	  <Resource Include="Assets\Lavender\wobbi-blink.svg" />
+	  <Resource Include="Assets\Lavender\wobbi-sleep.svg" />
+	  <Resource Include="Assets\Lavender\wobbi-happy.svg" />
   </ItemGroup>
 
 </Project>

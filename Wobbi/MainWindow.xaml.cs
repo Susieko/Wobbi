@@ -16,24 +16,45 @@ public partial class MainWindow : Window
 
     private readonly DispatcherTimer _blinkTimer = new();
     private readonly Random _random = new();
+    private readonly TranslateTransform _floating = new();
     private readonly TranslateTransform _petBounce = new();
     private readonly RotateTransform _curiousTilt = new();
     private bool _isBlinking = false;
     private bool _isSleeping = false;
     private ChatWindow? _chatWindow;
+
+    // The same speech bubble is used for replies and animated thinking dots.
+    private readonly DispatcherTimer _thinkingTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(380)
+    };
+    private bool _isThinking;
+    private int _thinkingDotCount;
     private readonly ScaleTransform _breathing = new(1, 1);
+    // Used to hide reply bubbles without an opacity animation in Reduced Animations mode.
+    private readonly DispatcherTimer _replyHideTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(5)
+    };
     private readonly DispatcherTimer _happyResetTimer = new();
     private bool _isHappy = false;
+    private readonly AppearanceSettingsService _appearanceSettings = new();
+    private WobbiAppearance _appearance = WobbiAppearance.Classic;
+    private WobbiPersonality _personality = WobbiPersonality.Calm;
+    private bool _showSpeechBubbles = true;
+    private bool _reducedAnimations = false;
 
     public MainWindow()
     {
         InitializeComponent();
 
-        var floating = new TranslateTransform();
+        // Read preferences before starting Wobbi's idle animations.
+        _showSpeechBubbles = _appearanceSettings.LoadShowSpeechBubbles();
+        _reducedAnimations = _appearanceSettings.LoadReducedAnimations();
 
         var transforms = new TransformGroup();
         transforms.Children.Add(_breathing);
-        transforms.Children.Add(floating);
+        transforms.Children.Add(_floating);
         transforms.Children.Add(_petBounce);
         transforms.Children.Add(_curiousTilt);
 
@@ -42,23 +63,7 @@ public partial class MainWindow : Window
 
 
 
-        var floatAnimation = new DoubleAnimation
-        {
-            From = 0,
-            To = -14,
-            Duration = TimeSpan.FromSeconds(1.8),
-            AutoReverse = true,
-            RepeatBehavior = RepeatBehavior.Forever,
-            EasingFunction = new SineEase
-            {
-                EasingMode = EasingMode.EaseInOut
-            }
-        };
-
-        floating.BeginAnimation(
-            TranslateTransform.YProperty,
-            floatAnimation
-        );
+        UpdateFloatingAnimation();
 
         UpdateBreathing();
 
@@ -67,6 +72,14 @@ public partial class MainWindow : Window
         _blinkTimer.Start();
         _happyResetTimer.Interval = TimeSpan.FromSeconds(2.0);
         _happyResetTimer.Tick += HappyResetTimer_Tick;
+        _thinkingTimer.Tick += ThinkingTimer_Tick;
+        _replyHideTimer.Tick += ReplyHideTimer_Tick;
+
+        _appearance = _appearanceSettings.Load();
+        ApplyAppearance();
+        _personality = _appearanceSettings.LoadPersonality();
+        ApplyPersonalityMenu();
+        ApplyPreferencesMenu();
     }
 
     private void BlinkTimer_Tick(object? sender, EventArgs e)
@@ -130,7 +143,7 @@ public partial class MainWindow : Window
         UpdateBreathing();
 
         // Start or stop sleepy particles
-        if (_isSleeping)
+        if (_isSleeping && !_reducedAnimations)
         {
             StartSleepParticles();
         }
@@ -157,26 +170,30 @@ public partial class MainWindow : Window
         StopHeartParticles();
 
         ShowHappyFace();
-        StartHeartParticles();
 
-        // Happy bounce
-        var happyBounce = new DoubleAnimation
+        if (!_reducedAnimations)
         {
-            From = 0,
-            To = -22,
-            Duration = TimeSpan.FromMilliseconds(180),
-            AutoReverse = true,
-            RepeatBehavior = new RepeatBehavior(2),
-            EasingFunction = new SineEase
-            {
-                EasingMode = EasingMode.EaseInOut
-            }
-        };
+            StartHeartParticles();
 
-        _petBounce.BeginAnimation(
-            TranslateTransform.YProperty,
-            happyBounce
-        );
+            // Keep the familiar petting bounce in normal mode.
+            var happyBounce = new DoubleAnimation
+            {
+                From = 0,
+                To = -22,
+                Duration = TimeSpan.FromMilliseconds(180),
+                AutoReverse = true,
+                RepeatBehavior = new RepeatBehavior(2),
+                EasingFunction = new SineEase
+                {
+                    EasingMode = EasingMode.EaseInOut
+                }
+            };
+
+            _petBounce.BeginAnimation(
+                TranslateTransform.YProperty,
+                happyBounce
+            );
+        }
 
         // Return to idle after a short moment
         _happyResetTimer.Start();
@@ -207,6 +224,8 @@ public partial class MainWindow : Window
         // Stop Wobbi's active timers
         _blinkTimer.Stop();
         _happyResetTimer.Stop();
+        _thinkingTimer.Stop();
+        _replyHideTimer.Stop();
 
         // Close the whole application,
         // including the chat window
@@ -231,8 +250,11 @@ public partial class MainWindow : Window
 
         _chatWindow = new ChatWindow(
             ReactToMood,
-            ShowSpeechBubble
+            ShowSpeechBubble,
+            SetThinkingBubble
         );
+
+        _chatWindow.SetPersonality(_personality);
 
         // Position chat beside Wobbi
         double spacing = 12;
@@ -262,6 +284,7 @@ public partial class MainWindow : Window
         // Allow a new chat after closing this one
         _chatWindow.Closed += (_, _) =>
         {
+            SetThinkingBubble(false);
             _chatWindow = null;
         };
 
@@ -271,22 +294,71 @@ public partial class MainWindow : Window
 
     private void ReactToMood(WobbiMood mood)
     {
-        WobbiAnimator.ReactToMood(
-            mood,
-            _petBounce,
-            _curiousTilt,
-            _isSleeping
-        );
+        // No AI-triggered reactions while Wobbi is sleeping.
+        if (_isSleeping)
+            return;
+
+        if (!_reducedAnimations)
+        {
+            WobbiAnimator.ReactToMood(
+                mood,
+                _petBounce,
+                _curiousTilt,
+                _isSleeping,
+                _personality
+            );
+        }
+
+        // A small smile belongs only to Happy / Excited reactions.
+        // It returns to the neutral face after our existing timer.
+        if (mood is WobbiMood.Happy or WobbiMood.Excited)
+        {
+            ShowHappyFace();
+            _happyResetTimer.Stop();
+            _happyResetTimer.Start();
+        }
     }
 
 
 
     private void UpdateBreathing()
     {
+        if (_reducedAnimations)
+        {
+            _breathing.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+            _breathing.ScaleY = 1.0;
+            return;
+        }
+
         WobbiAnimator.UpdateBreathing(
             _breathing,
             _isSleeping
         );
+    }
+
+    private void UpdateFloatingAnimation()
+    {
+        // Stop any existing float animation before changing motion settings.
+        _floating.BeginAnimation(TranslateTransform.YProperty, null);
+        _floating.Y = 0;
+
+        if (_reducedAnimations)
+            return;
+
+        var floatAnimation = new DoubleAnimation
+        {
+            From = 0,
+            To = -14,
+            Duration = TimeSpan.FromSeconds(1.8),
+            AutoReverse = true,
+            RepeatBehavior = RepeatBehavior.Forever,
+            EasingFunction = new SineEase
+            {
+                EasingMode = EasingMode.EaseInOut
+            }
+        };
+
+        _floating.BeginAnimation(TranslateTransform.YProperty, floatAnimation);
     }
 
 
@@ -359,8 +431,75 @@ public partial class MainWindow : Window
         ReturnToIdleFace();
     }
 
+    // Show an animated typing bubble above Wobbi while Ollama is responding.
+    // This reuses SpeechBubble and SpeechBubbleText from MainWindow.xaml.
+    private void SetThinkingBubble(bool thinking)
+    {
+        if (thinking && !_showSpeechBubbles)
+            return;
+
+        if (thinking)
+        {
+            _replyHideTimer.Stop();
+            _thinkingTimer.Stop();
+            _isThinking = true;
+            _thinkingDotCount = 1;
+
+            // Cancel any previous reply fade-out before showing the dots.
+            SpeechBubble.BeginAnimation(UIElement.OpacityProperty, null);
+            SpeechBubbleText.Text = ".";
+            SpeechBubble.Opacity = 1;
+            SpeechBubble.Visibility = Visibility.Visible;
+            _thinkingTimer.Start();
+        }
+        else
+        {
+            // Important: a second stop (in finally) must not hide the reply!
+            if (!_isThinking)
+                return;
+
+            _isThinking = false;
+            _thinkingTimer.Stop();
+            SpeechBubble.BeginAnimation(UIElement.OpacityProperty, null);
+            SpeechBubble.Visibility = Visibility.Collapsed;
+            SpeechBubbleText.Text = string.Empty;
+        }
+    }
+
+    private void ThinkingTimer_Tick(object? sender, EventArgs e)
+    {
+        _thinkingDotCount = (_thinkingDotCount % 3) + 1;
+        SpeechBubbleText.Text = new string('.', _thinkingDotCount);
+    }
+
+    private void ReplyHideTimer_Tick(object? sender, EventArgs e)
+    {
+        _replyHideTimer.Stop();
+        if (_isThinking)
+            return;
+
+        SpeechBubble.Visibility = Visibility.Collapsed;
+        SpeechBubble.Opacity = 0;
+    }
+
+    private void HideSpeechBubble()
+    {
+        _replyHideTimer.Stop();
+        _thinkingTimer.Stop();
+        _isThinking = false;
+        SpeechBubble.BeginAnimation(UIElement.OpacityProperty, null);
+        SpeechBubble.Visibility = Visibility.Collapsed;
+        SpeechBubble.Opacity = 0;
+        SpeechBubbleText.Text = string.Empty;
+    }
+
     private void ShowSpeechBubble(string message)
     {
+        if (!_showSpeechBubbles)
+            return;
+
+        _replyHideTimer.Stop();
+
         // Show a short preview of Wobbi's reply
         const int maxLength = 100;
 
@@ -371,6 +510,16 @@ public partial class MainWindow : Window
         SpeechBubbleText.Text = preview;
 
         SpeechBubble.Visibility = Visibility.Visible;
+        SpeechBubble.BeginAnimation(UIElement.OpacityProperty, null);
+
+        if (_reducedAnimations)
+        {
+            // No fading; still dismiss the bubble after five seconds.
+            SpeechBubble.Opacity = 1;
+            _replyHideTimer.Start();
+            return;
+        }
+
         SpeechBubble.Opacity = 0;
 
         // Create a gentle fade-in and fade-out
@@ -420,5 +569,110 @@ public partial class MainWindow : Window
             animation
         );
     }
+
+    private void ClassicAppearance_Click(object sender, RoutedEventArgs e)
+    => SetAppearance(WobbiAppearance.Classic);
+
+    private void LavenderAppearance_Click(object sender, RoutedEventArgs e)
+        => SetAppearance(WobbiAppearance.Lavender);
+
+    private void SetAppearance(WobbiAppearance appearance)
+    {
+        if (_appearance == appearance)
+        {
+            ApplyAppearance();
+            return;
+        }
+
+        _appearance = appearance;
+        ApplyAppearance();
+        _appearanceSettings.Save(appearance);
+    }
+
+    private void ApplyAppearance()
+    {
+        // Classic retains the ORIGINAL files; no need to move or rename them.
+        string folder = _appearance == WobbiAppearance.Lavender
+            ? "Assets/Lavender/"
+            : "Assets/";
+
+        OpenEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi.svg",
+                                  UriKind.Absolute);
+        ClosedEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi-blink.svg",
+                                    UriKind.Absolute);
+        SleepEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi-sleep.svg",
+                                   UriKind.Absolute);
+        HappyEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi-happy.svg",
+                                   UriKind.Absolute);
+
+        ClassicAppearanceMenuItem.IsChecked = _appearance == WobbiAppearance.Classic;
+        LavenderAppearanceMenuItem.IsChecked = _appearance == WobbiAppearance.Lavender;
+    }
+
+    private void CalmPersonality_Click(object sender, RoutedEventArgs e)
+    => SetPersonality(WobbiPersonality.Calm);
+
+    private void BalancedPersonality_Click(object sender, RoutedEventArgs e)
+        => SetPersonality(WobbiPersonality.Balanced);
+
+    private void PlayfulPersonality_Click(object sender, RoutedEventArgs e)
+        => SetPersonality(WobbiPersonality.Playful);
+
+    private void SetPersonality(WobbiPersonality personality)
+    {
+        _personality = personality;
+        _appearanceSettings.SavePersonality(personality);
+        ApplyPersonalityMenu();
+        _chatWindow?.SetPersonality(personality);
+    }
+
+    private void ApplyPersonalityMenu()
+    {
+        CalmPersonalityMenuItem.IsChecked = _personality == WobbiPersonality.Calm;
+        BalancedPersonalityMenuItem.IsChecked = _personality == WobbiPersonality.Balanced;
+        PlayfulPersonalityMenuItem.IsChecked = _personality == WobbiPersonality.Playful;
+    }
+
+    private void ShowSpeechBubbles_Click(object sender, RoutedEventArgs e)
+    {
+        _showSpeechBubbles = !_showSpeechBubbles;
+        _appearanceSettings.SaveShowSpeechBubbles(_showSpeechBubbles);
+        ApplyPreferencesMenu();
+
+        if (!_showSpeechBubbles)
+            HideSpeechBubble();
+    }
+
+    private void ReducedAnimations_Click(object sender, RoutedEventArgs e)
+    {
+        _reducedAnimations = !_reducedAnimations;
+        _appearanceSettings.SaveReducedAnimations(_reducedAnimations);
+        ApplyPreferencesMenu();
+
+        UpdateFloatingAnimation();
+        UpdateBreathing();
+
+        if (_reducedAnimations)
+        {
+            // Stop an in-progress bounce/tilt as soon as reduced motion is selected.
+            _petBounce.BeginAnimation(TranslateTransform.YProperty, null);
+            _petBounce.Y = 0;
+            _curiousTilt.BeginAnimation(RotateTransform.AngleProperty, null);
+            _curiousTilt.Angle = 0;
+            StopHeartParticles();
+            StopSleepParticles();
+        }
+        else if (_isSleeping)
+        {
+            StartSleepParticles();
+        }
+    }
+
+    private void ApplyPreferencesMenu()
+    {
+        ShowSpeechBubblesMenuItem.IsChecked = _showSpeechBubbles;
+        ReducedAnimationsMenuItem.IsChecked = _reducedAnimations;
+    }
+
 
 }

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         Title="Wobbi"
+        Icon="pack://application:,,,/Assets/Wobbi.ico"
         Width="300"
         Height="300"
         WindowStyle="None"
@@ -23,6 +24,41 @@
 
                 <MenuItem Header="Pet Wobbi 💜"
                           Click="PetWobbi_Click"/>
+                <MenuItem Header="Appearance">
+                    <MenuItem x:Name="ClassicAppearanceMenuItem"
+              Header="Classic Wobbi"
+              IsCheckable="True"
+              Click="ClassicAppearance_Click" />
+                    <MenuItem x:Name="LavenderAppearanceMenuItem"
+              Header="Lavender Wobbi"
+              IsCheckable="True"
+              Click="LavenderAppearance_Click" />
+                </MenuItem>
+                <MenuItem Header="Personality">
+                    <MenuItem x:Name="CalmPersonalityMenuItem"
+              Header="Calm" IsCheckable="True"
+              Click="CalmPersonality_Click" />
+                    <MenuItem x:Name="BalancedPersonalityMenuItem"
+              Header="Balanced" IsCheckable="True"
+              Click="BalancedPersonality_Click" />
+                    <MenuItem x:Name="PlayfulPersonalityMenuItem"
+              Header="Playful" IsCheckable="True"
+              Click="PlayfulPersonality_Click" />
+                </MenuItem>
+
+                <Separator/>
+
+                <MenuItem Header="Preferences">
+                    <MenuItem x:Name="ShowSpeechBubblesMenuItem"
+              Header="Show speech bubbles"
+              IsCheckable="True"
+              Click="ShowSpeechBubbles_Click"/>
+
+                    <MenuItem x:Name="ReducedAnimationsMenuItem"
+              Header="Reduced animations"
+              IsCheckable="True"
+              Click="ReducedAnimations_Click"/>
+                </MenuItem>
 
                 <Separator/>
 
