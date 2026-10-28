@@ -29,6 +29,7 @@
 	  <Resource Include="Assets\Lavender\wobbi-blink.svg" />
 	  <Resource Include="Assets\Lavender\wobbi-sleep.svg" />
 	  <Resource Include="Assets\Lavender\wobbi-happy.svg" />
+	  <Resource Include="Assets\Wobbi-Mini.png" />
   </ItemGroup>
 
 </Project>

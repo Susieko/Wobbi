@@ -24,6 +24,11 @@
 
                 <MenuItem Header="Pet Wobbi 💜"
                           Click="PetWobbi_Click"/>
+
+
+                <MenuItem Header="Sleep / Wake Wobbi 💤"
+          Click="SleepWobbi_Click"/>
+
                 <MenuItem Header="Appearance">
                     <MenuItem x:Name="ClassicAppearanceMenuItem"
               Header="Classic Wobbi"
@@ -61,6 +66,14 @@
                 </MenuItem>
 
                 <Separator/>
+
+
+                <MenuItem x:Name="MiniModeMenuItem"
+          Header="Switch to Mini Mode"
+          Click="ToggleMiniMode_Click"/>
+
+                <Separator/>
+
 
                 <MenuItem Header="Quit Wobbi"
                           Click="Exit_Click"/>
@@ -218,6 +231,27 @@
           HorizontalAlignment="Center"/>
 
         </StackPanel>
+
+        <!-- Wobbi 0.4: Mini Mode -->
+        <Grid x:Name="MiniView"
+      Width="76"
+      Height="72"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Center"
+      Background="Transparent"
+      Visibility="Collapsed">
+
+
+            <Image Source="pack://application:,,,/Assets/Wobbi-Mini.png"
+       Width="68"
+       Height="68"
+       Stretch="Uniform"
+       RenderOptions.BitmapScalingMode="HighQuality"
+       HorizontalAlignment="Center"
+       VerticalAlignment="Center"/>
+
+
+        </Grid>
 
     </Grid>
 </Window>

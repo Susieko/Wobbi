@@ -21,6 +21,31 @@ public partial class MainWindow : Window
     private readonly RotateTransform _curiousTilt = new();
     private bool _isBlinking = false;
     private bool _isSleeping = false;
+    private bool _isMiniMode = false;
+    private double _fullModeLeft;
+    private double _fullModeTop;
+
+
+    private void Window_MouseLeftButtonDown(
+    object sender,
+    MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            // Double-click switches between Full and Mini Mode.
+            ToggleMiniMode_Click(sender, e);
+
+            e.Handled = true;
+            return;
+        }
+
+        // Single-click and drag still moves Wobbi.
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
+    }
+
     private ChatWindow? _chatWindow;
 
     // The same speech bubble is used for replies and animated thinking dots.
@@ -48,6 +73,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Loaded += MainWindow_Loaded;
         // Read preferences before starting Wobbi's idle animations.
         _showSpeechBubbles = _appearanceSettings.LoadShowSpeechBubbles();
         _reducedAnimations = _appearanceSettings.LoadReducedAnimations();
@@ -151,9 +178,15 @@ public partial class MainWindow : Window
         {
             StopSleepParticles();
         }
-
     }
 
+
+    private void SleepWobbi_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        ToggleSleep();
+    }
 
     private void PetWobbi_Click(
         object sender,
@@ -198,24 +231,6 @@ public partial class MainWindow : Window
         // Return to idle after a short moment
         _happyResetTimer.Start();
     }
-
-
-    private void Window_MouseLeftButtonDown(
-        object sender,
-        MouseButtonEventArgs e)
-    {
-        if (e.ClickCount == 2)
-        {
-            ToggleSleep();
-            return;
-        }
-
-        if (e.LeftButton == MouseButtonState.Pressed)
-        {
-            DragMove();
-        }
-    }
-
 
     private void Exit_Click(
         object sender,
@@ -435,7 +450,7 @@ public partial class MainWindow : Window
     // This reuses SpeechBubble and SpeechBubbleText from MainWindow.xaml.
     private void SetThinkingBubble(bool thinking)
     {
-        if (thinking && !_showSpeechBubbles)
+        if (thinking && (_isMiniMode || !_showSpeechBubbles))
             return;
 
         if (thinking)
@@ -495,7 +510,7 @@ public partial class MainWindow : Window
 
     private void ShowSpeechBubble(string message)
     {
-        if (!_showSpeechBubbles)
+        if (_isMiniMode || !_showSpeechBubbles)
             return;
 
         _replyHideTimer.Stop();
@@ -672,6 +687,94 @@ public partial class MainWindow : Window
     {
         ShowSpeechBubblesMenuItem.IsChecked = _showSpeechBubbles;
         ReducedAnimationsMenuItem.IsChecked = _reducedAnimations;
+    }
+
+
+    private void ToggleMiniMode_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        _isMiniMode = !_isMiniMode;
+        ApplyMiniMode();
+    }
+
+
+    private void ApplyMiniMode()
+    {
+        if (_isMiniMode)
+        {
+            // Remember Full Wobbi's position.
+            _fullModeLeft = Left;
+            _fullModeTop = Top;
+
+            // Hide Full Wobbi and his speech bubble.
+            HideSpeechBubble();
+            WobbiImage.Visibility = Visibility.Collapsed;
+
+            // Show Mini Wobbi.
+            MiniView.Visibility = Visibility.Visible;
+
+            Width = 76;
+            Height = 72;
+
+            // Find the usable desktop area.
+            Rect workArea = SystemParameters.WorkArea;
+
+            // Leave a little space around Mini Wobbi.
+            const double margin = 16;
+
+            // Park him in the bottom-right corner.
+            Left = Math.Max(
+                workArea.Left,
+                workArea.Right - Width - margin
+            );
+
+            Top = Math.Max(
+                workArea.Top,
+                workArea.Bottom - Height - margin
+            );
+
+            MiniModeMenuItem.Header = "Switch to Full Mode";
+        }
+        else
+        {
+            // Hide Mini Wobbi.
+            MiniView.Visibility = Visibility.Collapsed;
+
+            // Restore the original window size.
+            Width = 300;
+            Height = 300;
+
+            // Return Full Wobbi to his previous position!
+            Left = _fullModeLeft;
+            Top = _fullModeTop;
+
+            WobbiImage.Visibility = Visibility.Visible;
+
+            MiniModeMenuItem.Header = "Switch to Mini Mode";
+        }
+    }
+
+
+    private void MainWindow_Loaded(
+        object sender,
+        RoutedEventArgs e)
+    {
+        // Find the usable screen area, excluding the taskbar.
+        Rect workArea = SystemParameters.WorkArea;
+
+        const double margin = 16;
+
+        // Start Full Wobbi in the bottom-right corner.
+        Left = Math.Max(
+            workArea.Left,
+            workArea.Right - ActualWidth - margin
+        );
+
+        Top = Math.Max(
+            workArea.Top,
+            workArea.Bottom - ActualHeight - margin
+        );
     }
 
 
