@@ -37,6 +37,18 @@ public partial class MainWindow : Window
     private bool _miniBlinking = false;
 
 
+    private readonly DispatcherTimer _autoSnoozeTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(2)
+    };
+
+    private bool _isAutoSnoozing = false;
+
+    private readonly DispatcherTimer _miniWakeBubbleTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(5)
+    };
+
 
     private void Window_MouseLeftButtonDown(
         object sender,
@@ -141,6 +153,62 @@ public partial class MainWindow : Window
         _miniGlanceTimer.Tick += MiniGlanceTimer_Tick;
         _miniGlanceTimer.Start();
 
+        _autoSnoozeTimer.Tick += (_, _) =>
+        {
+            TimeSpan? idleTime = WindowsIdleService.GetIdleTime();
+
+            if (idleTime == null)
+                return;
+
+            // Fall asleep after 5 minutes of inactivity.
+            if (idleTime.Value >= TimeSpan.FromMinutes(5))
+            {
+                if (!_isSleeping)
+                {
+                    _isAutoSnoozing = true;
+                    ToggleSleep();
+                }
+            }
+            // Wake only if the nap started automatically.
+
+            else if (_isAutoSnoozing)
+            {
+                _isAutoSnoozing = false;
+
+
+                if (_isSleeping)
+                {
+                    ToggleSleep();
+                    PlayAutoWakeHop();
+
+                    if (_isMiniMode)
+                    {
+                        if (_showSpeechBubbles)
+                        {
+                            _miniWakeBubbleTimer.Stop();
+                            MiniWakePopup.IsOpen = true;
+                            _miniWakeBubbleTimer.Start();
+                        }
+                    }
+                    else
+                    {
+                        ShowSpeechBubble("Oh! You're back! 💜");
+                    }
+                }
+
+
+            }
+
+        };
+
+        _autoSnoozeTimer.Start();
+
+        _miniWakeBubbleTimer.Tick += (_, _) =>
+        {
+            _miniWakeBubbleTimer.Stop();
+            MiniWakePopup.IsOpen = false;
+        };
+
         _appearance = _appearanceSettings.Load();
         ApplyAppearance();
         _personality = _appearanceSettings.LoadPersonality();
@@ -219,13 +287,52 @@ public partial class MainWindow : Window
         }
     }
 
+    private void PlayAutoWakeHop()
+    {
+        if (_reducedAnimations)
+            return;
+
+        var hop = new DoubleAnimation
+        {
+            Duration = TimeSpan.FromMilliseconds(180),
+            AutoReverse = true,
+            FillBehavior = FillBehavior.Stop,
+            EasingFunction = new SineEase
+            {
+                EasingMode = EasingMode.EaseInOut
+            }
+        };
+
+        if (_isMiniMode)
+        {
+            // Hop the entire Mini Wobbi window.
+            hop.From = Top;
+            hop.To = Top - 12;
+
+            BeginAnimation(Window.TopProperty, hop);
+        }
+        else
+        {
+            // Hop Full Wobbi using his existing transform.
+            hop.From = 0;
+            hop.To = -18;
+
+            _petBounce.BeginAnimation(
+                TranslateTransform.YProperty, hop);
+        }
+    }
+
 
     private void SleepWobbi_Click(
         object sender,
         RoutedEventArgs e)
     {
+        // Manual sleep/wake overrides Auto-Snooze.
+        _isAutoSnoozing = false;
+
         ToggleSleep();
     }
+
 
     private void PetWobbi_Click(
         object sender,
