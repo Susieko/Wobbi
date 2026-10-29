@@ -19,6 +19,11 @@ public partial class MainWindow : Window
     private readonly TranslateTransform _floating = new();
     private readonly TranslateTransform _petBounce = new();
     private readonly RotateTransform _curiousTilt = new();
+    private readonly DispatcherTimer _miniClickTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(550)
+    };
+
     private bool _isBlinking = false;
     private bool _isSleeping = false;
     private bool _isMiniMode = false;
@@ -26,25 +31,45 @@ public partial class MainWindow : Window
     private double _fullModeTop;
 
 
+
     private void Window_MouseLeftButtonDown(
-    object sender,
-    MouseButtonEventArgs e)
+        object sender,
+        MouseButtonEventArgs e)
     {
+        // Double-click switches between Mini and Full Mode.
         if (e.ClickCount == 2)
         {
-            // Double-click switches between Full and Mini Mode.
+            _miniClickTimer.Stop();
+
             ToggleMiniMode_Click(sender, e);
 
             e.Handled = true;
             return;
         }
 
-        // Single-click and drag still moves Wobbi.
-        if (e.LeftButton == MouseButtonState.Pressed)
+        if (e.LeftButton != MouseButtonState.Pressed)
+            return;
+
+        // Remember where Wobbi was before the mouse action.
+        double startLeft = Left;
+        double startTop = Top;
+
+        // Keep dragging functionality.
+        DragMove();
+
+        // Did Wobbi actually move?
+        bool wasDragged =
+            Math.Abs(Left - startLeft) > 3 ||
+            Math.Abs(Top - startTop) > 3;
+
+        // Only a stationary click in Mini Mode opens chat.
+        if (_isMiniMode && !wasDragged)
         {
-            DragMove();
+            _miniClickTimer.Stop();
+            _miniClickTimer.Start();
         }
     }
+
 
     private ChatWindow? _chatWindow;
 
@@ -101,6 +126,7 @@ public partial class MainWindow : Window
         _happyResetTimer.Tick += HappyResetTimer_Tick;
         _thinkingTimer.Tick += ThinkingTimer_Tick;
         _replyHideTimer.Tick += ReplyHideTimer_Tick;
+        _miniClickTimer.Tick += MiniClickTimer_Tick;
 
         _appearance = _appearanceSettings.Load();
         ApplyAppearance();
@@ -253,15 +279,26 @@ public partial class MainWindow : Window
         object sender,
         RoutedEventArgs e)
     {
+
+        // Opening chat clears Mini Wobbi's notification.
+        MiniNotificationBadge.Visibility =
+            Visibility.Collapsed;
+
         // Reuse the existing chat window
+
         if (_chatWindow != null)
         {
+            // Reopen a chat hidden by the X button.
+            if (!_chatWindow.IsVisible)
+                _chatWindow.Show();
+
             if (_chatWindow.WindowState == WindowState.Minimized)
                 _chatWindow.WindowState = WindowState.Normal;
 
             _chatWindow.Activate();
             return;
         }
+
 
         _chatWindow = new ChatWindow(
             ReactToMood,
@@ -270,6 +307,27 @@ public partial class MainWindow : Window
         );
 
         _chatWindow.SetPersonality(_personality);
+
+
+        // Keep the conversation alive when X is clicked.
+        var chat = _chatWindow;
+
+        chat.Closing += (_, e) =>
+        {
+            e.Cancel = true;
+            chat.Hide();
+        };
+
+        _chatWindow.ReplyReceived += ChatWindow_ReplyReceived;
+
+        // Clear notifications when the chat is brought into focus,
+        // including when restored directly from the taskbar.
+        _chatWindow.Activated += (_, _) =>
+        {
+            MiniNotificationBadge.Visibility =
+                Visibility.Collapsed;
+        };
+
 
         // Position chat beside Wobbi
         double spacing = 12;
@@ -696,6 +754,9 @@ public partial class MainWindow : Window
     {
         _isMiniMode = !_isMiniMode;
         ApplyMiniMode();
+
+        // Remember Wobbi's selected size.
+        _appearanceSettings.SaveMiniMode(_isMiniMode);
     }
 
 
@@ -775,6 +836,59 @@ public partial class MainWindow : Window
             workArea.Top,
             workArea.Bottom - ActualHeight - margin
         );
+
+
+        // Restore Mini Mode if it was selected last time.
+        if (_appearanceSettings.LoadMiniMode())
+        {
+            _isMiniMode = true;
+            ApplyMiniMode();
+        }
+
+    }
+
+    private void MiniClickTimer_Tick(
+        object? sender,
+        EventArgs e)
+    {
+        _miniClickTimer.Stop();
+
+        if (!_isMiniMode)
+            return;
+
+        // Open or focus Wobbi's existing chat.
+        OpenChat_Click(this, new RoutedEventArgs());
+    }
+
+
+    private void TestMiniNotification_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        MiniNotificationBadge.Visibility =
+            Visibility.Visible;
+    }
+
+
+    private void ChatWindow_ReplyReceived(
+        object? sender,
+        EventArgs e)
+    {
+        // Notifications only appear in Mini Mode.
+        if (!_isMiniMode || _chatWindow == null)
+            return;
+
+        // No notification needed if you're already
+        // looking at Wobbi's chat.
+        if (_chatWindow.IsActive &&
+            _chatWindow.WindowState != WindowState.Minimized)
+        {
+            return;
+        }
+
+        // A new unread AI reply!
+        MiniNotificationBadge.Visibility =
+            Visibility.Visible;
     }
 
 
