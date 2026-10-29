@@ -18,6 +18,8 @@ public sealed class AppearanceSettingsService
         public string Personality { get; set; } = nameof(WobbiPersonality.Calm);
         public bool ShowSpeechBubbles { get; set; } = true;
         public bool ReducedAnimations { get; set; } = false;
+        public bool MiniMode { get; set; } = false;
+
     }
 
     private static SettingsData ReadSettings()
@@ -102,4 +104,17 @@ public sealed class AppearanceSettingsService
         settings.ReducedAnimations = enabled;
         WriteSettings(settings);
     }
+
+    public bool LoadMiniMode()
+    {
+        return ReadSettings().MiniMode;
+    }
+
+    public void SaveMiniMode(bool enabled)
+    {
+        SettingsData settings = ReadSettings();
+        settings.MiniMode = enabled;
+        WriteSettings(settings);
+    }
+
 }

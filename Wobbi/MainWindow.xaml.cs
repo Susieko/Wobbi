@@ -9,6 +9,7 @@ using Wobbi.Services;
 using System.Windows.Controls;
 using Wobbi.Models;
 using Wobbi.Animations;
+using System.Windows.Media.Imaging;
 namespace Wobbi;
 
 public partial class MainWindow : Window
@@ -19,8 +20,63 @@ public partial class MainWindow : Window
     private readonly TranslateTransform _floating = new();
     private readonly TranslateTransform _petBounce = new();
     private readonly RotateTransform _curiousTilt = new();
+    private readonly DispatcherTimer _miniGlanceTimer = new();
+    private bool _miniLookingAround = false;
+    private readonly DispatcherTimer _miniClickTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(550)
+    };
+
     private bool _isBlinking = false;
     private bool _isSleeping = false;
+    private bool _isMiniMode = false;
+    private double _fullModeLeft;
+    private double _fullModeTop;
+
+    private readonly DispatcherTimer _miniBlinkTimer = new();
+    private bool _miniBlinking = false;
+
+
+
+    private void Window_MouseLeftButtonDown(
+        object sender,
+        MouseButtonEventArgs e)
+    {
+        // Double-click switches between Mini and Full Mode.
+        if (e.ClickCount == 2)
+        {
+            _miniClickTimer.Stop();
+
+            ToggleMiniMode_Click(sender, e);
+
+            e.Handled = true;
+            return;
+        }
+
+        if (e.LeftButton != MouseButtonState.Pressed)
+            return;
+
+        // Remember where Wobbi was before the mouse action.
+        double startLeft = Left;
+        double startTop = Top;
+
+        // Keep dragging functionality.
+        DragMove();
+
+        // Did Wobbi actually move?
+        bool wasDragged =
+            Math.Abs(Left - startLeft) > 3 ||
+            Math.Abs(Top - startTop) > 3;
+
+        // Only a stationary click in Mini Mode opens chat.
+        if (_isMiniMode && !wasDragged)
+        {
+            _miniClickTimer.Stop();
+            _miniClickTimer.Start();
+        }
+    }
+
+
     private ChatWindow? _chatWindow;
 
     // The same speech bubble is used for replies and animated thinking dots.
@@ -48,6 +104,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Loaded += MainWindow_Loaded;
         // Read preferences before starting Wobbi's idle animations.
         _showSpeechBubbles = _appearanceSettings.LoadShowSpeechBubbles();
         _reducedAnimations = _appearanceSettings.LoadReducedAnimations();
@@ -74,6 +132,14 @@ public partial class MainWindow : Window
         _happyResetTimer.Tick += HappyResetTimer_Tick;
         _thinkingTimer.Tick += ThinkingTimer_Tick;
         _replyHideTimer.Tick += ReplyHideTimer_Tick;
+        _miniClickTimer.Tick += MiniClickTimer_Tick;
+
+        _miniBlinkTimer.Interval = TimeSpan.FromSeconds(4);
+        _miniBlinkTimer.Tick += MiniBlinkTimer_Tick;
+        _miniBlinkTimer.Start();
+        _miniGlanceTimer.Interval = TimeSpan.FromSeconds(8);
+        _miniGlanceTimer.Tick += MiniGlanceTimer_Tick;
+        _miniGlanceTimer.Start();
 
         _appearance = _appearanceSettings.Load();
         ApplyAppearance();
@@ -151,9 +217,15 @@ public partial class MainWindow : Window
         {
             StopSleepParticles();
         }
-
     }
 
+
+    private void SleepWobbi_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        ToggleSleep();
+    }
 
     private void PetWobbi_Click(
         object sender,
@@ -199,24 +271,6 @@ public partial class MainWindow : Window
         _happyResetTimer.Start();
     }
 
-
-    private void Window_MouseLeftButtonDown(
-        object sender,
-        MouseButtonEventArgs e)
-    {
-        if (e.ClickCount == 2)
-        {
-            ToggleSleep();
-            return;
-        }
-
-        if (e.LeftButton == MouseButtonState.Pressed)
-        {
-            DragMove();
-        }
-    }
-
-
     private void Exit_Click(
         object sender,
         RoutedEventArgs e)
@@ -238,15 +292,26 @@ public partial class MainWindow : Window
         object sender,
         RoutedEventArgs e)
     {
+
+        // Opening chat clears Mini Wobbi's notification.
+        MiniNotificationBadge.Visibility =
+            Visibility.Collapsed;
+
         // Reuse the existing chat window
+
         if (_chatWindow != null)
         {
+            // Reopen a chat hidden by the X button.
+            if (!_chatWindow.IsVisible)
+                _chatWindow.Show();
+
             if (_chatWindow.WindowState == WindowState.Minimized)
                 _chatWindow.WindowState = WindowState.Normal;
 
             _chatWindow.Activate();
             return;
         }
+
 
         _chatWindow = new ChatWindow(
             ReactToMood,
@@ -255,6 +320,27 @@ public partial class MainWindow : Window
         );
 
         _chatWindow.SetPersonality(_personality);
+
+
+        // Keep the conversation alive when X is clicked.
+        var chat = _chatWindow;
+
+        chat.Closing += (_, e) =>
+        {
+            e.Cancel = true;
+            chat.Hide();
+        };
+
+        _chatWindow.ReplyReceived += ChatWindow_ReplyReceived;
+
+        // Clear notifications when the chat is brought into focus,
+        // including when restored directly from the taskbar.
+        _chatWindow.Activated += (_, _) =>
+        {
+            MiniNotificationBadge.Visibility =
+                Visibility.Collapsed;
+        };
+
 
         // Position chat beside Wobbi
         double spacing = 12;
@@ -435,7 +521,7 @@ public partial class MainWindow : Window
     // This reuses SpeechBubble and SpeechBubbleText from MainWindow.xaml.
     private void SetThinkingBubble(bool thinking)
     {
-        if (thinking && !_showSpeechBubbles)
+        if (thinking && (_isMiniMode || !_showSpeechBubbles))
             return;
 
         if (thinking)
@@ -495,7 +581,7 @@ public partial class MainWindow : Window
 
     private void ShowSpeechBubble(string message)
     {
-        if (!_showSpeechBubbles)
+        if (_isMiniMode || !_showSpeechBubbles)
             return;
 
         _replyHideTimer.Stop();
@@ -672,6 +758,253 @@ public partial class MainWindow : Window
     {
         ShowSpeechBubblesMenuItem.IsChecked = _showSpeechBubbles;
         ReducedAnimationsMenuItem.IsChecked = _reducedAnimations;
+    }
+
+
+    private void ToggleMiniMode_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        _isMiniMode = !_isMiniMode;
+        ApplyMiniMode();
+
+        // Remember Wobbi's selected size.
+        _appearanceSettings.SaveMiniMode(_isMiniMode);
+    }
+
+
+    private void ApplyMiniMode()
+    {
+        if (_isMiniMode)
+        {
+            // Remember Full Wobbi's position.
+            _fullModeLeft = Left;
+            _fullModeTop = Top;
+            SetMiniFace("mini-idle.png");
+            _miniLookingAround = false;
+            _miniGlanceTimer.Interval = TimeSpan.FromSeconds(8);
+
+            // Hide Full Wobbi and his speech bubble.
+            HideSpeechBubble();
+            WobbiImage.Visibility = Visibility.Collapsed;
+
+            // Show Mini Wobbi.
+            MiniView.Visibility = Visibility.Visible;
+
+            Width = 76;
+            Height = 72;
+
+            // Find the usable desktop area.
+            Rect workArea = SystemParameters.WorkArea;
+
+            // Leave a little space around Mini Wobbi.
+            const double margin = 16;
+
+            // Park him in the bottom-right corner.
+            Left = Math.Max(
+                workArea.Left,
+                workArea.Right - Width - margin
+            );
+
+            Top = Math.Max(
+                workArea.Top,
+                workArea.Bottom - Height - margin
+            );
+
+            MiniModeMenuItem.Header = "Switch to Full Mode";
+        }
+        else
+        {
+            // Hide Mini Wobbi.
+            MiniView.Visibility = Visibility.Collapsed;
+
+            // Restore the original window size.
+            Width = 300;
+            Height = 300;
+
+            // Return Full Wobbi to his previous position!
+            Left = _fullModeLeft;
+            Top = _fullModeTop;
+
+            WobbiImage.Visibility = Visibility.Visible;
+
+            MiniModeMenuItem.Header = "Switch to Mini Mode";
+        }
+    }
+
+
+    private void MainWindow_Loaded(
+        object sender,
+        RoutedEventArgs e)
+    {
+        // Find the usable screen area, excluding the taskbar.
+        Rect workArea = SystemParameters.WorkArea;
+
+        const double margin = 16;
+
+        // Start Full Wobbi in the bottom-right corner.
+        Left = Math.Max(
+            workArea.Left,
+            workArea.Right - ActualWidth - margin
+        );
+
+        Top = Math.Max(
+            workArea.Top,
+            workArea.Bottom - ActualHeight - margin
+        );
+
+
+        // Restore Mini Mode if it was selected last time.
+        if (_appearanceSettings.LoadMiniMode())
+        {
+            _isMiniMode = true;
+            ApplyMiniMode();
+        }
+
+    }
+
+    private void MiniClickTimer_Tick(
+        object? sender,
+        EventArgs e)
+    {
+        _miniClickTimer.Stop();
+
+        if (!_isMiniMode)
+            return;
+
+        // Open or focus Wobbi's existing chat.
+        OpenChat_Click(this, new RoutedEventArgs());
+    }
+
+    private void ChatWindow_ReplyReceived(
+        object? sender,
+        EventArgs e)
+    {
+        // Notifications only appear in Mini Mode.
+        if (!_isMiniMode || _chatWindow == null)
+            return;
+
+        // No notification needed if you're already
+        // looking at Wobbi's chat.
+        if (_chatWindow.IsActive &&
+            _chatWindow.WindowState != WindowState.Minimized)
+        {
+            return;
+        }
+
+        // A new unread AI reply!
+        MiniNotificationBadge.Visibility =
+            Visibility.Visible;
+    }
+
+    private void MiniBlinkTimer_Tick(
+        object? sender,
+        EventArgs e)
+    {
+        // Only animate when Mini Wobbi is awake.
+        if (!_isMiniMode || _isSleeping)
+        {
+            ResetMiniBlink();
+            _miniBlinkTimer.Interval =
+                TimeSpan.FromSeconds(4);
+            return;
+        }
+
+        if (_miniBlinking)
+        {
+            // Open his eyes again.
+            ResetMiniBlink();
+
+            // Wait 3-6 seconds before the next blink.
+            double nextBlink =
+                3 + _random.NextDouble() * 3;
+
+            _miniBlinkTimer.Interval =
+                TimeSpan.FromSeconds(nextBlink);
+        }
+
+        else
+        {
+            // Keep his normal face visible underneath.
+            MiniFrameTestImage.Visibility =
+                Visibility.Visible;
+
+            // Display the blinking face on top.
+            MiniBlinkImage.Visibility =
+                Visibility.Visible;
+
+            _miniBlinking = true;
+
+            _miniBlinkTimer.Interval =
+                TimeSpan.FromMilliseconds(140);
+        }
+
+    }
+
+    private void ResetMiniBlink()
+    {
+        _miniBlinking = false;
+
+        MiniBlinkImage.Visibility =
+            Visibility.Collapsed;
+
+        MiniFrameTestImage.Visibility =
+            Visibility.Visible;
+    }
+
+    private void MiniGlanceTimer_Tick(
+        object? sender,
+        EventArgs e)
+    {
+        // Only glance when Mini Wobbi is awake
+        // and reduced animations are disabled.
+        if (!_isMiniMode || _isSleeping || _reducedAnimations)
+        {
+            SetMiniFace("mini-idle.png");
+            _miniLookingAround = false;
+            _miniGlanceTimer.Interval = TimeSpan.FromSeconds(8);
+            return;
+        }
+
+        if (_miniLookingAround)
+        {
+            // Return his eyes to the center.
+            SetMiniFace("mini-idle.png");
+            _miniLookingAround = false;
+
+            double wait = _personality switch
+            {
+                WobbiPersonality.Calm => 12 + _random.NextDouble() * 5,
+                WobbiPersonality.Playful => 5 + _random.NextDouble() * 4,
+                _ => 8 + _random.NextDouble() * 4
+            };
+
+            _miniGlanceTimer.Interval = TimeSpan.FromSeconds(wait);
+        }
+        else
+        {
+            // Randomly look left or right.
+            string image = _random.Next(2) == 0
+                ? "mini-look-left.png"
+                : "mini-look-right.png";
+
+            SetMiniFace(image);
+            _miniLookingAround = true;
+
+            // Hold the glance for a moment.
+            _miniGlanceTimer.Interval =
+                TimeSpan.FromMilliseconds(650);
+        }
+    }
+
+    private void SetMiniFace(string filename)
+    {
+        MiniFrameTestImage.Source = new BitmapImage(
+            new Uri(
+                $"pack://application:,,,/Wobbi;component/Assets/Mini/{filename}",
+                UriKind.Absolute
+            )
+        );
     }
 
 

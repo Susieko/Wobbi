@@ -24,11 +24,16 @@
 
                 <MenuItem Header="Pet Wobbi 💜"
                           Click="PetWobbi_Click"/>
+
+                <MenuItem Header="Sleep / Wake Wobbi 💤"
+                          Click="SleepWobbi_Click"/>
+                <Separator/>
+
                 <MenuItem Header="Appearance">
                     <MenuItem x:Name="ClassicAppearanceMenuItem"
-              Header="Classic Wobbi"
-              IsCheckable="True"
-              Click="ClassicAppearance_Click" />
+                                Header="Classic Wobbi"
+                                IsCheckable="True"
+                                Click="ClassicAppearance_Click" />
                     <MenuItem x:Name="LavenderAppearanceMenuItem"
               Header="Lavender Wobbi"
               IsCheckable="True"
@@ -59,6 +64,13 @@
               IsCheckable="True"
               Click="ReducedAnimations_Click"/>
                 </MenuItem>
+
+                <Separator/>
+
+
+                <MenuItem x:Name="MiniModeMenuItem"
+          Header="Switch to Mini Mode"
+          Click="ToggleMiniMode_Click"/>
 
                 <Separator/>
 
@@ -218,6 +230,71 @@
           HorizontalAlignment="Center"/>
 
         </StackPanel>
+
+        <!-- Wobbi 0.4: Mini Mode -->
+        <Grid x:Name="MiniView"
+      Width="76"
+      Height="72"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Center"
+      Background="Transparent"
+      Visibility="Collapsed">
+
+
+
+
+            <Image x:Name="MiniFaceImage"
+       Source="pack://application:,,,/Assets/Wobbi-Mini.png"
+       Visibility="Collapsed"
+       Width="68"
+       Height="68"
+       Stretch="Uniform"
+       RenderOptions.BitmapScalingMode="HighQuality"
+       HorizontalAlignment="Center"
+       VerticalAlignment="Center"/>
+
+
+            <Image x:Name="MiniFrameTestImage"
+       Source="/Wobbi;component/Assets/Mini/mini-idle.png"
+       Width="68"
+       Height="68"
+       Stretch="Uniform"
+       RenderOptions.BitmapScalingMode="HighQuality"
+       HorizontalAlignment="Center"
+       VerticalAlignment="Center"
+       IsHitTestVisible="False"/>
+
+
+            <!-- Mini Wobbi blinking face -->
+            <Image x:Name="MiniBlinkImage"
+       Source="/Wobbi;component/Assets/Mini/mini-blink.png"
+       Width="68"
+       Height="68"
+       Stretch="Uniform"
+       RenderOptions.BitmapScalingMode="HighQuality"
+       HorizontalAlignment="Center"
+       VerticalAlignment="Center"
+       Visibility="Collapsed"
+       IsHitTestVisible="False"/>
+
+
+
+
+            <!-- Mini Wobbi notification badge -->
+            <Ellipse x:Name="MiniNotificationBadge"
+         Width="14"
+         Height="14"
+         Fill="#FF5F9E"
+         Stroke="#40205F"
+         StrokeThickness="2"
+         HorizontalAlignment="Right"
+         VerticalAlignment="Top"
+         Margin="0,0,2,0"
+         Panel.ZIndex="10"
+         IsHitTestVisible="False"
+         Visibility="Collapsed"/>
+
+        </Grid>
 
     </Grid>
 </Window>

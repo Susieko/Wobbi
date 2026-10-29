@@ -2,30 +2,42 @@
 
 **A tiny cosmic desktop companion with a surprisingly big personality.**
 
-**Current version: 0.3.0 — Calm & Cute (early prototype)**
+**Current version: 0.4.0 — Mini Mode (early prototype)**
 
 ## 🎬 See Wobbi in action
 
 https://github.com/user-attachments/assets/451d0fe6-1634-4472-aa87-2f6ba91d56d3
 
-Wobbi is an animated, AI-powered Windows desktop buddy built with C#, .NET 10, WPF and Ollama. He floats on your screen, reacts to interactions, falls asleep, and chats with you through a locally running language model.
+Wobbi is an animated, AI-powered Windows desktop buddy built with C#, .NET 10, WPF and Ollama. He keeps you company on your desktop, reacts to interactions, and chats through a locally running language model.
 
 No paid AI subscription or cloud API key is required.
 
 ## ✨ Features
 
-- **Two appearances** — switch between Classic and Lavender Wobbi, with your choice saved across restarts.
-- **Three personality presets** — Calm, Balanced and Playful; switch live without clearing the open conversation.
-- **Personality-aware reactions** — happy bounces, excited hops and curious tilts respond to Wobbi's selected personality and AI mood.
-- **Animated desktop companion** — floating, breathing, blinking and draggable character.
-- **Sleep mode** — sleepy expression, slower breathing and drifting Z's.
-- **Pet interactions** — smiles, happy bounces and floating hearts.
-- **Local AI chat** — Ollama + `qwen3:4b-instruct`, with short-term conversational context and AI-selected emotions.
-- **Thinking and reply bubbles** — animated typing dots (`.` → `..` → `...`) above Wobbi while Ollama responds, followed by a short reply preview.
-- **Saved preferences** — turn speech bubbles on/off or reduce animations; appearance and personality choices are saved too.
-- **Custom application icon** — a chibi Wobbi icon for Windows.
+### New in 0.4 — Mini Mode
 
-> **Project status:** Wobbi is an experimental learning and portfolio project, not a finished desktop assistant or installer-based product. The v0.3.0 GitHub release contains source code; build Wobbi locally to run it.
+- **Full and Mini modes** — switch between the full character and a tiny, face-only desktop companion by double-clicking.
+- **A home in the corner** — Wobbi launches at the bottom-right of the primary screen, and Mini Wobbi parks just above the taskbar. The window can still be dragged, and expanding restores the full-size character's previous position.
+- **Remembered size** — Mini/Full preference persists across restarts.
+- **Mini interactions** — single-click Mini Wobbi to open or focus chat; double-click to switch modes; drag to reposition.
+- **Mini expressions** — blinking and occasional left/right glances, with personality-dependent glance frequency and reduced-motion support.
+- **Unread reply badge** — a small notification dot appears in Mini Mode when a new AI answer arrives while the chat is not active. Opening chat clears the badge.
+- **Hide instead of forgetting** — closing the chat with X hides the window; reopening it restores the conversation while Wobbi remains running.
+- **Refreshed Lavender artwork** — updated character shading, highlights and expressions.
+
+### Also included
+
+- **Two full-size appearances** — Classic and Lavender Wobbi, with your selection saved.
+- **Three AI personalities** — Calm, Balanced and Playful; switch during an open conversation.
+- **Personality-aware reactions** — different happy bounces, excited hops and curious tilts.
+- **Animated companion** — floating, breathing, blinking, dragging, and expressive faces.
+- **Sleep and pet interactions** — sleepy eyes and Z's; smiling, bouncing and floating hearts.
+- **Local AI chat** — Ollama with `qwen3:4b-instruct`, recent conversational context and AI-selected moods.
+- **Thinking and reply bubbles** — animated `.` → `..` → `...` while Ollama responds, followed by a short reply preview.
+- **Saved visual preferences** — show/hide speech bubbles and reduce animations.
+- **Custom Windows app icon** — chibi Wobbi.
+
+> **Project status:** Wobbi is an experimental learning and portfolio project, not a finished desktop assistant or installer-based product. Build the source locally to run it.
 
 ## 🛠 Tech stack
 
@@ -36,16 +48,16 @@ No paid AI subscription or cloud API key is required.
 | SharpVectors.Wpf | SVG character art |
 | Ollama | Local AI runtime |
 | Qwen3 4B Instruct | Local language model (`qwen3:4b-instruct`) |
-| HttpClient / JSON | AI requests, structured replies and mood selection |
+| HttpClient / JSON | AI requests and structured mood replies |
 
 ## 🚀 Getting started
 
 ### Prerequisites
 
 - Windows with support for .NET 10 desktop apps
-- .NET 10 SDK and Visual Studio with the **.NET desktop development** workload (if building from Visual Studio)
+- .NET 10 SDK and, optionally, Visual Studio with the **.NET desktop development** workload
 - [Ollama](https://ollama.com/download/windows)
-- Enough free RAM and processing capacity to run the selected local model
+- Enough memory and processing capacity to run the selected local AI model
 
 ### 1. Install the model
 
@@ -55,7 +67,7 @@ Open PowerShell:
 ollama pull qwen3:4b-instruct
 ```
 
-Ensure Ollama is running.
+Make sure Ollama is running.
 
 ### 2. Build and launch
 
@@ -70,32 +82,36 @@ Or open `Wobbi.slnx` in Visual Studio and run the Wobbi project.
 
 ## 💜 Using Wobbi
 
-- **Drag Wobbi:** move him around the desktop.
-- **Double-click:** put him to sleep or wake him up.
-- **Right-click → Pet Wobbi:** play his happy animation.
-- **Right-click → Talk to Wobbi:** open the AI chat.
-- **Right-click → Appearance:** choose Classic or Lavender.
+- **Double-click:** switch between Full and Mini Mode.
+- **Single-click in Mini Mode:** open or focus the AI chat (after a short delay to distinguish double-clicks).
+- **Drag:** reposition Wobbi on the desktop.
+- **Right-click → Talk:** open the AI chat.
+- **Right-click → Pet:** trigger his happy reaction.
+- **Right-click → Sleep / Wake:** toggle sleep mode.
+- **Right-click → Appearance:** choose Classic or Lavender for Full Wobbi.
 - **Right-click → Personality:** choose Calm, Balanced or Playful.
-- **Right-click → Preferences:** configure speech bubbles and reduced animations.
-- **Right-click → Quit:** close Wobbi.
+- **Right-click → Preferences:** toggle speech bubbles and reduced animations.
+- **Right-click → Quit:** exit the application.
+- **Chat window X:** hide chat without clearing the current conversation; reopening restores it while Wobbi is running.
 
-The exact wording of context-menu items may vary slightly between builds.
+The Mini character currently uses its own lavender chibi artwork, independently of the selected full-size appearance.
 
 ## 🔒 Privacy and data
 
-Wobbi sends chat requests to **your local Ollama instance** at `http://127.0.0.1:11434/`. No paid cloud AI provider or API key is needed for this setup.
+Wobbi sends chat requests to **your local Ollama instance** at `http://127.0.0.1:11434/`. No paid cloud AI provider or API key is required for this setup.
 
-- Recent chat context is held **in memory** and is not intended as permanent AI memory.
-- Appearance, personality and visual preferences are saved locally in `%LOCALAPPDATA%\Wobbi\appearance.json`.
-- Downloading Ollama or the model requires internet access initially; subsequent model inference runs locally.
+- Recent chat context is held **in memory**, including while the chat window is hidden. It is **not preserved between application restarts**.
+- Appearance, personality, Mini Mode and visual preferences are stored locally in `%LOCALAPPDATA%\Wobbi\appearance.json`.
+- The notification dot indicates an unread AI reply; it is not yet a general reminder or alert system.
+- Downloading Ollama and the model requires internet access initially; subsequent model inference runs locally.
 
 ## 📋 Release notes
 
-See [CHANGELOG.md](CHANGELOG.md) for changes in v0.3.0.
+See [CHANGELOG.md](CHANGELOG.md) for version history and the v0.4.0 changes.
 
 ## 🪐 What's next?
 
-The planned **v0.4 Mini Mode** focuses on a tiny desktop version of Wobbi, with a compact face, notification badge and expandable interaction. Later ideas include reminders, local memory and weather.
+Planned next steps include reminders and agenda integration, optional persistent memory, local notes and everyday productivity features. These are roadmap ideas, not currently shipped features.
 
 ## 💜 About
 

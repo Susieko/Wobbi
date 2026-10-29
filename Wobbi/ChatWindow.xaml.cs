@@ -18,6 +18,7 @@ namespace Wobbi;
 public partial class ChatWindow : Window
 {
     private readonly WobbiAiService _ai = new();
+    public event EventHandler? ReplyReceived;
     private readonly Action<WobbiMood> _onMood;
     private readonly Action<string> _onReply;
     private readonly Action<bool> _onThinking;
@@ -114,6 +115,8 @@ public partial class ChatWindow : Window
 
             // Show Wobbi's speech bubble
             _onReply(reply.Text);
+            // Tell Mini Wobbi that a new reply has arrived.
+            ReplyReceived?.Invoke(this, EventArgs.Empty);
         }
         catch (HttpRequestException ex)
         {

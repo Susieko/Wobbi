@@ -1,110 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 930 700" width="930" height="700" role="img" aria-label="Wobbi 0.3 happy">
-<title>Wobbi 0.3 - happy</title><desc>Editable vector illustration. Body outline fit to user-provided reference contour, soft ribbon tail and a plain golden star.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 930 700" width="930" height="700" role="img" aria-label="Lavender Wobbi 0.4 – happy">
+<title>Wobbi 0.4 · Lavender Refresh · happy</title><desc>Editable vector. Original 0.3 silhouette, curved lilac tail and star preserved. Mini-inspired lilac colors and subtle shine.</desc>
 <defs>
-  <linearGradient id="body" x1="0" y1="0" x2="0.07" y2="1">
-    <stop offset="0" stop-color="#494582"/>
-    <stop offset=".15" stop-color="#504C8C"/>
-    <stop offset=".245" stop-color="#585399"/>
-    <stop offset=".32" stop-color="#625BA4"/>
-    <stop offset=".39" stop-color="#6C65B0"/>
-    <stop offset=".50" stop-color="#7770C0"/>
-    <stop offset=".60" stop-color="#877DCC"/>
-    <stop offset=".71" stop-color="#9E8FD8"/>
-    <stop offset=".85" stop-color="#BEA8E4"/>
-    <stop offset=".925" stop-color="#D2B8EC"/>
-    <stop offset="1" stop-color="#DEC1F0"/>
-  </linearGradient>
-<linearGradient id="chain" x1="0" y1="0" x2="0.7" y2="1">
-    <stop offset="0" stop-color="#F1D9FF"/><stop offset="0.55" stop-color="#C9A9F4"/><stop offset="1" stop-color="#9E7BD8"/>
-</linearGradient>
-<radialGradient id="charm" cx="30%" cy="23%" r="85%"><stop stop-color="#7774CA"/><stop offset="0.55" stop-color="#41458F"/><stop offset="1" stop-color="#29295C"/></radialGradient>
+  <linearGradient id="body" x1="0" y1="0" x2="0.14" y2="1"><stop offset="0" stop-color="#5E4AA7"/><stop offset=".16" stop-color="#6654BB"/><stop offset=".34" stop-color="#7D67D0"/><stop offset=".56" stop-color="#A38AE6"/><stop offset=".77" stop-color="#C9A7EF"/><stop offset="1" stop-color="#E9C7F6"/></linearGradient><linearGradient id="chain" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="#F0D6FF"/><stop offset=".5" stop-color="#D5B0FA"/><stop offset="1" stop-color="#A77CE1"/></linearGradient><radialGradient id="charm" cx="30%" cy="23%" r="85%"><stop stop-color="#7774CA"/><stop offset="0.55" stop-color="#41458F"/><stop offset="1" stop-color="#29295C"/></radialGradient>
 <filter id="groundBlur" x="-25%" width="150%" y="-100%" height="300%"><feGaussianBlur stdDeviation="8"/></filter>
 <g id="ring"><path d="M -30 0 A 30 26 0 1 0 30 0 A 30 26 0 1 0 -30 0 Z M -16 0 A 16 12 0 1 1 16 0 A 16 12 0 1 1 -16 0 Z" fill="url(#chain)" fill-rule="evenodd" stroke="#393273" stroke-width="4.2" stroke-linejoin="round"/>
 <path d="M -23 -14 Q -10 -25 9 -18" fill="none" stroke="#FAEAFF" stroke-width="4.5" opacity=".9" stroke-linecap="round"/></g>
 
-</defs>
+<linearGradient id="ear-lilac" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E2C3FF" stop-opacity=".92"/><stop offset=".53" stop-color="#AF8DEF" stop-opacity=".65"/><stop offset="1" stop-color="#8D6CDA" stop-opacity=".12"/></linearGradient><radialGradient id="body-sheen" cx="38%" cy="13%" r="69%"><stop offset="0" stop-color="#FBEEFF" stop-opacity=".23"/><stop offset=".38" stop-color="#F4E0FF" stop-opacity=".10"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient><radialGradient id="cheek-glow" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#FF9CCF" stop-opacity=".95"/><stop offset=".45" stop-color="#F6A5D9" stop-opacity=".80"/><stop offset="1" stop-color="#F6A5D9" stop-opacity="0"/></radialGradient><linearGradient id="star-warm" x1="0" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="#FFFFDD"/><stop offset=".52" stop-color="#FFEDAE"/><stop offset="1" stop-color="#FBCB6D"/></linearGradient></defs>
 <ellipse id="ground-shadow" cx="383" cy="554" rx="198" ry="17" fill="#8B74CE" opacity=".17" filter="url(#groundBlur)"/>
 <g id="tail" aria-label="Lavender Wobbi's soft lilac tail and golden star">
   <!-- Tail reaches out from behind the right cheek as one continuous curved ribbon. -->
-  <path id="lavender-tail-outline"
-        d="M 548 504 C 592 487 621 494 640 516 C 658 538 667 557 693 555 C 716 554 730 541 742 530"
-        fill="none" stroke="#272652" stroke-width="31" stroke-linecap="round" stroke-linejoin="round"/>
-  <path id="lavender-tail"
-        d="M 548 504 C 592 487 621 494 640 516 C 658 538 667 557 693 555 C 716 554 730 541 742 530"
-        fill="none" stroke="#CCA8ED" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Bare five-point cosmic star, as in the original design reference. -->
-  <path id="star-charm" transform="translate(750 541)"
-        d="M 0 -39 L 12 -13 L 41 -7 L 18 11 L 25 39 L 0 24 L -25 39 L -18 11 L -41 -7 L -12 -13 Z"
-        fill="#FFF1B3"/>
-</g>
+  <path id="lavender-tail-outline" d="M 548 504 C 592 487 621 494 640 516 C 658 538 667 557 693 555 C 716 554 730 541 742 530" fill="none" stroke="#30245F" stroke-width="31" stroke-linecap="round" stroke-linejoin="round"/>
+  <path id="lavender-tail" d="M 548 504 C 592 487 621 494 640 516 C 658 538 667 557 693 555 C 716 554 730 541 742 530" fill="none" stroke="url(#chain)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path id="tail-sheen" d="M 548 504 C 592 487 621 494 640 516 C 658 538 667 557 693 555 C 716 554 730 541 742 530" fill="none" stroke="#F8E4FF" stroke-width="4" stroke-linecap="round" opacity=".55"/><!-- Bare five-point cosmic star, as in the original design reference. -->
+  <path id="star-charm" transform="translate(750 541)" d="M 0 -39 L 12 -13 L 41 -7 L 18 11 L 25 39 L 0 24 L -25 39 L -18 11 L -41 -7 L -12 -13 Z" fill="url(#star-warm)" stroke="#FFF7D1" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M 748 513 l 2 -6 l 2 6 l 6 2 l -6 2 l -2 6 l -2 -6 l -6 -2 Z" fill="#FFFDF3" opacity=".62"/></g>
 
 <g id="blob" transform="translate(160 175) scale(1.18)">
- <path id="round-body" d="M 79 21
- C 73.25 25.26 69.21 29.94 66.15 35.45
- C 63.08 40.97 61.23 46.98 60.33 53.21
- C 59.42 59.45 59.46 65.92 60.19 72.35
- C 60.91 78.79 62.32 85.19 64.15 91.28
- C 65.97 97.38 67.60 103.77 70.00 109.00
- C 65.91 113.12 61.73 118.05 58.10 122.68
- C 54.47 127.32 51.11 132.20 48.09 137.28
- C 45.06 142.36 42.39 147.65 40.12 153.11
- C 37.86 158.57 36.02 164.20 34.66 169.97
- C 33.31 175.73 32.45 181.64 32.14 187.64
- C 31.84 193.63 32.06 199.69 32.79 205.70
- C 33.52 211.70 34.77 217.65 36.50 223.41
- C 38.23 229.17 40.46 234.75 43.15 240.01
- C 45.84 245.28 49.00 250.23 52.61 254.75
- C 56.22 259.27 60.26 263.38 64.66 267.12
- C 69.06 270.85 73.81 274.21 78.82 277.23
- C 83.84 280.24 89.13 282.91 94.60 285.28
- C 100.07 287.64 105.72 289.70 111.47 291.48
- C 117.23 293.26 123.07 294.77 128.96 296.04
- C 134.84 297.30 140.78 298.33 146.75 299.14
- C 152.72 299.96 158.73 300.56 164.76 300.99
- C 170.78 301.41 176.82 301.66 182.87 301.75
- C 188.91 301.85 194.96 301.81 200.99 301.63
- C 207.02 301.44 213.04 301.10 219.04 300.58
- C 225.03 300.06 230.99 299.35 236.92 298.43
- C 242.84 297.50 248.72 296.36 254.55 294.97
- C 260.37 293.57 266.15 291.93 271.83 290.00
- C 277.51 288.07 283.08 285.86 288.46 283.34
- C 293.84 280.82 299.04 278.00 303.97 274.84
- C 308.91 271.68 313.57 268.19 317.90 264.34
- C 322.22 260.49 326.20 256.27 329.76 251.67
- C 333.32 247.07 336.45 242.08 339.12 236.79
- C 341.79 231.51 344.00 225.95 345.69 220.22
- C 347.39 214.50 348.59 208.61 349.24 202.67
- C 349.89 196.74 349.99 190.76 349.52 184.85
- C 349.04 178.94 347.96 173.12 346.33 167.45
- C 344.71 161.77 342.55 156.23 339.95 150.88
- C 337.35 145.53 334.30 140.35 330.91 135.40
- C 327.51 130.45 323.77 125.72 319.77 121.26
- C 315.76 116.79 311.43 111.90 307.00 108.00
- C 309.77 103.03 312.44 97.07 314.49 91.10
- C 316.54 85.13 318.11 78.80 318.96 72.40
- C 319.81 66.00 319.93 59.54 319.10 53.29
- C 318.26 47.05 316.46 41.03 313.46 35.52
- C 310.46 30.00 306.65 25.20 301.00 21.00
- C 296.63 24.99 292.28 29.04 287.95 33.14
- C 283.63 37.24 279.31 41.37 275.01 45.52
- C 270.70 49.67 266.40 53.83 262.09 57.98
- C 257.79 62.13 253.33 65.90 249.00 70.00
- C 243.51 68.24 237.63 67.13 231.82 65.88
- C 226.00 64.64 220.05 63.64 214.02 62.90
- C 207.99 62.16 201.88 61.67 195.74 61.43
- C 189.60 61.19 183.43 61.20 177.29 61.46
- C 171.15 61.72 165.04 62.23 159.01 62.98
- C 152.98 63.74 147.03 64.74 141.22 65.99
- C 135.40 67.23 129.48 68.27 124.00 70.00
- C 120.15 65.96 116.24 61.94 112.49 57.86
- C 108.74 53.77 105.02 49.68 101.29 45.58
- C 97.57 41.49 93.83 37.41 90.04 33.34
- C 86.25 29.27 82.92 25.01 79.00 21.00 Z" fill="url(#body)" stroke="#272652" stroke-width="8.4" stroke-linejoin="round" stroke-linecap="round"/>
- <g id="face">
-  <ellipse id="eye-left" cx="123" cy="189" rx="12" ry="30" fill="#171936"/><ellipse id="eye-right" cx="242" cy="189" rx="12" ry="30" fill="#171936"/><path id="happy-mouth" d="M 171 237 Q 183 250 195 237" fill="none" stroke="#262044" stroke-width="5" stroke-linecap="round"/>
-  <ellipse id="blush-left" cx="75" cy="233" rx="28" ry="15.5" fill="#F2A1CE"/>
-  <ellipse id="blush-right" cx="290" cy="233" rx="28" ry="15.5" fill="#F2A1CE"/>
- </g>
+ <path id="round-body" d="M 79 21  C 73.25 25.26 69.21 29.94 66.15 35.45  C 63.08 40.97 61.23 46.98 60.33 53.21  C 59.42 59.45 59.46 65.92 60.19 72.35  C 60.91 78.79 62.32 85.19 64.15 91.28  C 65.97 97.38 67.60 103.77 70.00 109.00  C 65.91 113.12 61.73 118.05 58.10 122.68  C 54.47 127.32 51.11 132.20 48.09 137.28  C 45.06 142.36 42.39 147.65 40.12 153.11  C 37.86 158.57 36.02 164.20 34.66 169.97  C 33.31 175.73 32.45 181.64 32.14 187.64  C 31.84 193.63 32.06 199.69 32.79 205.70  C 33.52 211.70 34.77 217.65 36.50 223.41  C 38.23 229.17 40.46 234.75 43.15 240.01  C 45.84 245.28 49.00 250.23 52.61 254.75  C 56.22 259.27 60.26 263.38 64.66 267.12  C 69.06 270.85 73.81 274.21 78.82 277.23  C 83.84 280.24 89.13 282.91 94.60 285.28  C 100.07 287.64 105.72 289.70 111.47 291.48  C 117.23 293.26 123.07 294.77 128.96 296.04  C 134.84 297.30 140.78 298.33 146.75 299.14  C 152.72 299.96 158.73 300.56 164.76 300.99  C 170.78 301.41 176.82 301.66 182.87 301.75  C 188.91 301.85 194.96 301.81 200.99 301.63  C 207.02 301.44 213.04 301.10 219.04 300.58  C 225.03 300.06 230.99 299.35 236.92 298.43  C 242.84 297.50 248.72 296.36 254.55 294.97  C 260.37 293.57 266.15 291.93 271.83 290.00  C 277.51 288.07 283.08 285.86 288.46 283.34  C 293.84 280.82 299.04 278.00 303.97 274.84  C 308.91 271.68 313.57 268.19 317.90 264.34  C 322.22 260.49 326.20 256.27 329.76 251.67  C 333.32 247.07 336.45 242.08 339.12 236.79  C 341.79 231.51 344.00 225.95 345.69 220.22  C 347.39 214.50 348.59 208.61 349.24 202.67  C 349.89 196.74 349.99 190.76 349.52 184.85  C 349.04 178.94 347.96 173.12 346.33 167.45  C 344.71 161.77 342.55 156.23 339.95 150.88  C 337.35 145.53 334.30 140.35 330.91 135.40  C 327.51 130.45 323.77 125.72 319.77 121.26  C 315.76 116.79 311.43 111.90 307.00 108.00  C 309.77 103.03 312.44 97.07 314.49 91.10  C 316.54 85.13 318.11 78.80 318.96 72.40  C 319.81 66.00 319.93 59.54 319.10 53.29  C 318.26 47.05 316.46 41.03 313.46 35.52  C 310.46 30.00 306.65 25.20 301.00 21.00  C 296.63 24.99 292.28 29.04 287.95 33.14  C 283.63 37.24 279.31 41.37 275.01 45.52  C 270.70 49.67 266.40 53.83 262.09 57.98  C 257.79 62.13 253.33 65.90 249.00 70.00  C 243.51 68.24 237.63 67.13 231.82 65.88  C 226.00 64.64 220.05 63.64 214.02 62.90  C 207.99 62.16 201.88 61.67 195.74 61.43  C 189.60 61.19 183.43 61.20 177.29 61.46  C 171.15 61.72 165.04 62.23 159.01 62.98  C 152.98 63.74 147.03 64.74 141.22 65.99  C 135.40 67.23 129.48 68.27 124.00 70.00  C 120.15 65.96 116.24 61.94 112.49 57.86  C 108.74 53.77 105.02 49.68 101.29 45.58  C 97.57 41.49 93.83 37.41 90.04 33.34  C 86.25 29.27 82.92 25.01 79.00 21.00 Z" fill="url(#body)" stroke="#32245F" stroke-width="9.1" stroke-linejoin="round" stroke-linecap="round"/>
+ <path id="soft-forehead-sheen" d="M 79 21  C 73.25 25.26 69.21 29.94 66.15 35.45  C 63.08 40.97 61.23 46.98 60.33 53.21  C 59.42 59.45 59.46 65.92 60.19 72.35  C 60.91 78.79 62.32 85.19 64.15 91.28  C 65.97 97.38 67.60 103.77 70.00 109.00  C 65.91 113.12 61.73 118.05 58.10 122.68  C 54.47 127.32 51.11 132.20 48.09 137.28  C 45.06 142.36 42.39 147.65 40.12 153.11  C 37.86 158.57 36.02 164.20 34.66 169.97  C 33.31 175.73 32.45 181.64 32.14 187.64  C 31.84 193.63 32.06 199.69 32.79 205.70  C 33.52 211.70 34.77 217.65 36.50 223.41  C 38.23 229.17 40.46 234.75 43.15 240.01  C 45.84 245.28 49.00 250.23 52.61 254.75  C 56.22 259.27 60.26 263.38 64.66 267.12  C 69.06 270.85 73.81 274.21 78.82 277.23  C 83.84 280.24 89.13 282.91 94.60 285.28  C 100.07 287.64 105.72 289.70 111.47 291.48  C 117.23 293.26 123.07 294.77 128.96 296.04  C 134.84 297.30 140.78 298.33 146.75 299.14  C 152.72 299.96 158.73 300.56 164.76 300.99  C 170.78 301.41 176.82 301.66 182.87 301.75  C 188.91 301.85 194.96 301.81 200.99 301.63  C 207.02 301.44 213.04 301.10 219.04 300.58  C 225.03 300.06 230.99 299.35 236.92 298.43  C 242.84 297.50 248.72 296.36 254.55 294.97  C 260.37 293.57 266.15 291.93 271.83 290.00  C 277.51 288.07 283.08 285.86 288.46 283.34  C 293.84 280.82 299.04 278.00 303.97 274.84  C 308.91 271.68 313.57 268.19 317.90 264.34  C 322.22 260.49 326.20 256.27 329.76 251.67  C 333.32 247.07 336.45 242.08 339.12 236.79  C 341.79 231.51 344.00 225.95 345.69 220.22  C 347.39 214.50 348.59 208.61 349.24 202.67  C 349.89 196.74 349.99 190.76 349.52 184.85  C 349.04 178.94 347.96 173.12 346.33 167.45  C 344.71 161.77 342.55 156.23 339.95 150.88  C 337.35 145.53 334.30 140.35 330.91 135.40  C 327.51 130.45 323.77 125.72 319.77 121.26  C 315.76 116.79 311.43 111.90 307.00 108.00  C 309.77 103.03 312.44 97.07 314.49 91.10  C 316.54 85.13 318.11 78.80 318.96 72.40  C 319.81 66.00 319.93 59.54 319.10 53.29  C 318.26 47.05 316.46 41.03 313.46 35.52  C 310.46 30.00 306.65 25.20 301.00 21.00  C 296.63 24.99 292.28 29.04 287.95 33.14  C 283.63 37.24 279.31 41.37 275.01 45.52  C 270.70 49.67 266.40 53.83 262.09 57.98  C 257.79 62.13 253.33 65.90 249.00 70.00  C 243.51 68.24 237.63 67.13 231.82 65.88  C 226.00 64.64 220.05 63.64 214.02 62.90  C 207.99 62.16 201.88 61.67 195.74 61.43  C 189.60 61.19 183.43 61.20 177.29 61.46  C 171.15 61.72 165.04 62.23 159.01 62.98  C 152.98 63.74 147.03 64.74 141.22 65.99  C 135.40 67.23 129.48 68.27 124.00 70.00  C 120.15 65.96 116.24 61.94 112.49 57.86  C 108.74 53.77 105.02 49.68 101.29 45.58  C 97.57 41.49 93.83 37.41 90.04 33.34  C 86.25 29.27 82.92 25.01 79.00 21.00 Z" fill="url(#body-sheen)" stroke="none" pointer-events="none"/><path id="left-ear-glow" d="M 79 40 C 69 49 69 66 76 88 Q 88 81 105 78 Q 91 56 79 40 Z" fill="url(#ear-lilac)" opacity=".47"/><path id="right-ear-glow" d="M 302 40 C 311 53 309 71 302 89 Q 285 78 273 76 Q 286 56 302 40 Z" fill="url(#ear-lilac)" opacity=".47"/><path id="upper-rim" d="M 68 105 C 55 76 58 43 79 29 Q 101 52 124 76 Q 185 51 249 75 Q 282 47 302 29 Q 321 54 305 102" fill="none" stroke="#D1A9FF" stroke-width="3.7" stroke-linecap="round" stroke-linejoin="round" opacity=".32"/><path d="M 76 52 Q 69 64 73 76" fill="none" stroke="#FFF1FF" stroke-width="3" stroke-linecap="round" opacity=".36"/><path d="M 305 53 Q 311 64 308 76" fill="none" stroke="#FFF1FF" stroke-width="3" stroke-linecap="round" opacity=".35"/><g id="face">
+  <ellipse id="eye-left" cx="123" cy="189" rx="13.5" ry="29" fill="#1A1432"/><ellipse id="eye-glint-left" cx="119.5" cy="178.0" rx="3.7" ry="6.3" fill="#FFF4FF" opacity=".91"/><ellipse id="eye-right" cx="242" cy="189" rx="13.5" ry="29" fill="#1A1432"/><ellipse id="eye-glint-right" cx="238.5" cy="178.0" rx="3.7" ry="6.3" fill="#FFF4FF" opacity=".91"/><path id="happy-mouth" d="M 171 237 Q 183 250 195 237" fill="none" stroke="#281A48" stroke-width="5" stroke-linecap="round"/>
+  <ellipse id="blush-left" cx="75" cy="233" rx="28" ry="15.5" fill="#F5A8D4" opacity=".84"/>
+  <ellipse id="cheek-softlight-left" cx="75.0" cy="233.0" rx="39" ry="25" fill="url(#cheek-glow)" opacity=".35"/><ellipse cx="64.0" cy="228.0" rx="5.2" ry="2.5" fill="#FFF5FA" opacity=".72"/><ellipse id="blush-right" cx="290" cy="233" rx="28" ry="15.5" fill="#F5A8D4" opacity=".84"/>
+ <ellipse id="cheek-softlight-right" cx="290.0" cy="233.0" rx="39" ry="25" fill="url(#cheek-glow)" opacity=".35"/><ellipse cx="279.0" cy="228.0" rx="5.2" ry="2.5" fill="#FFF5FA" opacity=".72"/></g>
 </g>
 <g id="sleep-zzz" visibility="hidden" fill="#8271D1" font-family="system-ui, sans-serif" font-weight="700"><text x="558" y="242" font-size="21">z</text><text x="579" y="217" font-size="27">z</text><text x="604" y="185" font-size="34">Z</text></g>
 </svg>
