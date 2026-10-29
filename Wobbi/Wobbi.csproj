@@ -11,7 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\wobbi-blink.svg" />
+    <None Remove="Assets\Mini\mini-idle.png" />
+	  <None Remove="Assets\Mini\mini-blink.png" />
+
+	  <None Remove="Assets\Mini\mini-look-left.png" />
+	  <None Remove="Assets\Mini\mini-look-right.png" />
+
+	  <None Remove="Assets\wobbi-blink.svg" />
     <None Remove="Assets\wobbi.svg" />
   </ItemGroup>
 
@@ -20,7 +26,18 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Resource Include="Assets\Wobbi.ico" />
+	<Resource Include="Assets\Mini\mini-idle.png">
+	  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	</Resource>
+
+	  <Resource Include="Assets\Mini\mini-blink.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </Resource>
+
+	  <Resource Include="Assets\Mini\mini-look-left.png" />
+	  <Resource Include="Assets\Mini\mini-look-right.png" />
+
+	  <Resource Include="Assets\Wobbi.ico" />
     <Resource Include="Assets\wobbi-happy.svg" />
     <Resource Include="Assets\wobbi-sleep.svg" />
     <Resource Include="Assets\wobbi-blink.svg" />

@@ -74,10 +74,6 @@
 
                 <Separator/>
 
-                <MenuItem Header="Test notification 🔔"
-          Click="TestMiniNotification_Click"/>  
-
-
                 <MenuItem Header="Quit Wobbi"
                           Click="Exit_Click"/>
 
@@ -245,13 +241,43 @@
       Visibility="Collapsed">
 
 
-            <Image Source="pack://application:,,,/Assets/Wobbi-Mini.png"
+
+
+            <Image x:Name="MiniFaceImage"
+       Source="pack://application:,,,/Assets/Wobbi-Mini.png"
+       Visibility="Collapsed"
        Width="68"
        Height="68"
        Stretch="Uniform"
        RenderOptions.BitmapScalingMode="HighQuality"
        HorizontalAlignment="Center"
        VerticalAlignment="Center"/>
+
+
+            <Image x:Name="MiniFrameTestImage"
+       Source="/Wobbi;component/Assets/Mini/mini-idle.png"
+       Width="68"
+       Height="68"
+       Stretch="Uniform"
+       RenderOptions.BitmapScalingMode="HighQuality"
+       HorizontalAlignment="Center"
+       VerticalAlignment="Center"
+       IsHitTestVisible="False"/>
+
+
+            <!-- Mini Wobbi blinking face -->
+            <Image x:Name="MiniBlinkImage"
+       Source="/Wobbi;component/Assets/Mini/mini-blink.png"
+       Width="68"
+       Height="68"
+       Stretch="Uniform"
+       RenderOptions.BitmapScalingMode="HighQuality"
+       HorizontalAlignment="Center"
+       VerticalAlignment="Center"
+       Visibility="Collapsed"
+       IsHitTestVisible="False"/>
+
+
 
 
             <!-- Mini Wobbi notification badge -->
