@@ -65,6 +65,16 @@
               Click="ReducedAnimations_Click"/>
                 </MenuItem>
 
+
+
+                <MenuItem x:Name="AutoSnoozeMenuItem"
+          Header="Auto-snooze after 5 minutes"
+          IsCheckable="True"
+          IsChecked="True"
+          Click="AutoSnooze_Click"/>
+
+
+
                 <Separator/>
 
 

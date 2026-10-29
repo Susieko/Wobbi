@@ -44,6 +44,9 @@ public partial class MainWindow : Window
 
     private bool _isAutoSnoozing = false;
 
+    private bool _autoSnoozeEnabled = true;
+
+
     private readonly DispatcherTimer _miniWakeBubbleTimer = new()
     {
         Interval = TimeSpan.FromSeconds(5)
@@ -122,6 +125,9 @@ public partial class MainWindow : Window
         _showSpeechBubbles = _appearanceSettings.LoadShowSpeechBubbles();
         _reducedAnimations = _appearanceSettings.LoadReducedAnimations();
 
+        _autoSnoozeEnabled = _appearanceSettings.LoadAutoSnooze();
+
+
         var transforms = new TransformGroup();
         transforms.Children.Add(_breathing);
         transforms.Children.Add(_floating);
@@ -153,9 +159,15 @@ public partial class MainWindow : Window
         _miniGlanceTimer.Tick += MiniGlanceTimer_Tick;
         _miniGlanceTimer.Start();
 
+
         _autoSnoozeTimer.Tick += (_, _) =>
         {
+            // Don't automatically sleep or wake when disabled.
+            if (!_autoSnoozeEnabled)
+                return;
+
             TimeSpan? idleTime = WindowsIdleService.GetIdleTime();
+
 
             if (idleTime == null)
                 return;
@@ -861,11 +873,26 @@ public partial class MainWindow : Window
         }
     }
 
+    private void AutoSnooze_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        _autoSnoozeEnabled = AutoSnoozeMenuItem.IsChecked;
+
+        _appearanceSettings.SaveAutoSnooze(
+            _autoSnoozeEnabled
+        );
+    }
+
+
+
     private void ApplyPreferencesMenu()
     {
         ShowSpeechBubblesMenuItem.IsChecked = _showSpeechBubbles;
         ReducedAnimationsMenuItem.IsChecked = _reducedAnimations;
+        AutoSnoozeMenuItem.IsChecked = _autoSnoozeEnabled;
     }
+
 
 
     private void ToggleMiniMode_Click(
