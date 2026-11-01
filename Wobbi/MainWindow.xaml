@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         Title="Wobbi"
-        Icon="pack://application:,,,/Assets/Wobbi.ico"
         Width="300"
         Height="300"
         WindowStyle="None"
@@ -97,7 +96,7 @@
             <!-- Normal Wobbi -->
             <svgc:SvgViewbox
                 x:Name="OpenEyes"
-                Source="pack://application:,,,/Assets/wobbi.svg"
+                Source="pack://application:,,,/Wobbi;component/Assets/wobbi.svg"
                 Stretch="Uniform"/>
 
             <!-- Blinking Wobbi -->
@@ -120,6 +119,13 @@
                  Stretch="Uniform"
                  Visibility="Collapsed"/>
 
+            <!-- Wobbi v0.4.1 — Head scritching expression -->
+            <svgc:SvgViewbox
+    x:Name="ScritchEyes"
+    Source="pack://application:,,,/Assets/wobbi-scritch.svg"
+    Stretch="Uniform"
+    Visibility="Collapsed"
+    IsHitTestVisible="False"/>
 
             <!-- Animated sleeping particles -->
             <Viewbox x:Name="SleepParticles"
@@ -194,6 +200,21 @@
                    Opacity="0"/>
                 </Canvas>
             </Viewbox>
+
+            <!-- Wobbi v0.4.1: Forehead patting zone -->
+            <Border x:Name="HeadPatZone"
+        Width="90"
+        Height="28"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Margin="74,85,0,0"
+        Background="Transparent"
+        CornerRadius="14"
+        Cursor="Hand"
+        Panel.ZIndex="100"
+        MouseLeftButtonDown="HeadPatZone_MouseLeftButtonDown"
+        MouseLeftButtonUp="HeadPatZone_MouseLeftButtonUp"
+        LostMouseCapture="HeadPatZone_LostMouseCapture"/>
 
         </Grid>
 

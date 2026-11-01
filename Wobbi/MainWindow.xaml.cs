@@ -11,7 +11,7 @@ using Wobbi.Models;
 using Wobbi.Animations;
 using System.Windows.Media.Imaging;
 namespace Wobbi;
-
+using System.IO;
 public partial class MainWindow : Window
 {
 
@@ -41,6 +41,13 @@ public partial class MainWindow : Window
     {
         Interval = TimeSpan.FromSeconds(2)
     };
+
+
+    private readonly DispatcherTimer _sleepyScritchTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(1)
+    };
+
 
     private bool _isAutoSnoozing = false;
 
@@ -92,6 +99,120 @@ public partial class MainWindow : Window
     }
 
 
+
+
+    private void HeadPatZone_MouseLeftButtonDown(
+        object sender,
+        MouseButtonEventArgs e)
+    {
+        if (_isMiniMode || e.ChangedButton != MouseButton.Left)
+            return;
+
+        // Keep double-click Mini Mode working.
+        if (e.ClickCount == 2)
+            return;
+
+        e.Handled = true;
+
+        _isPatting = true;
+        _isHoldingPat = false;
+
+        // Hand changes to pressed pose.
+        HeadPatZone.Cursor = _patPressedCursor;
+
+        // Keep receiving mouse events until release.
+        if (!HeadPatZone.CaptureMouse())
+        {
+            CancelPatGesture();
+            return;
+        }
+
+        // Begin detecting a longer head scritch.
+        _patHoldTimer.Stop();
+        _patHoldTimer.Start();
+    }
+
+
+    private void PatHoldTimer_Tick(
+        object? sender,
+        EventArgs e)
+    {
+        _patHoldTimer.Stop();
+
+        if (!_isPatting ||
+            Mouse.LeftButton != MouseButtonState.Pressed)
+            return;
+
+        // Wobbi is receiving head scritchies!
+        _isHoldingPat = true;
+
+        HeadPatZone.Cursor = _patHoldingCursor;
+        StartHeadScritchies();
+    }
+
+    private void HeadPatZone_MouseLeftButtonUp(
+        object sender,
+        MouseButtonEventArgs e)
+
+    {
+        if (!_isPatting)
+            return;
+
+        e.Handled = true;
+
+        bool wasHolding = _isHoldingPat;
+
+        CancelPatGesture();
+
+        // A short click is a regular happy pat.
+        if (!wasHolding && !_isSleeping)
+        {
+            PetWobbi_Click(sender, e);
+        }
+
+        if (wasHolding && !_isSleeping && !_reducedAnimations)
+        {
+            PlayScritchReleaseBounce();
+        }
+
+
+        // Long-hold reactions arrive in Step 4.
+    }
+
+
+
+
+    private void CancelPatGesture()
+    {
+        bool wasHolding = _isHoldingPat;
+
+        _patHoldTimer.Stop();
+
+        _isPatting = false;
+        _isHoldingPat = false;
+
+        HeadPatZone.Cursor = _patHoverCursor;
+
+        // Return to normal when the hold ends.
+        if (wasHolding)
+            StopHeadScritchies();
+
+        if (HeadPatZone.IsMouseCaptured)
+            HeadPatZone.ReleaseMouseCapture();
+    }
+
+
+    private void HeadPatZone_LostMouseCapture(
+        object sender,
+        MouseEventArgs e)
+    {
+        // Prevent a stuck patting state if
+        // mouse capture is interrupted.
+        if (_isPatting)
+            CancelPatGesture();
+    }
+
+
     private ChatWindow? _chatWindow;
 
     // The same speech bubble is used for replies and animated thinking dots.
@@ -115,9 +236,63 @@ public partial class MainWindow : Window
     private bool _showSpeechBubbles = true;
     private bool _reducedAnimations = false;
 
+
+    // Wobbi v0.4.1 — Head scritchies
+    private Cursor? _patHoverCursor;
+    private Cursor? _patPressedCursor;
+    private Cursor? _patHoldingCursor;
+
+    private bool _isPatting;
+    private bool _isHoldingPat;
+
+    private readonly DispatcherTimer _patHoldTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(350)
+    };
+
+
     public MainWindow()
     {
         InitializeComponent();
+
+
+        // Wobbi v0.4.1 — Custom patting cursor
+
+        string cursorPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Assets",
+            "Cursors",
+            "wobbi-pat-hover-reference.cur"
+        );
+
+        if (!File.Exists(cursorPath))
+        {
+            throw new FileNotFoundException(
+                "Wobbi's patting cursor is missing!",
+                cursorPath
+            );
+        }
+
+
+        // Load all three cursor poses
+        _patHoverCursor = new Cursor(cursorPath);
+
+        _patPressedCursor = new Cursor(Path.Combine(
+            AppContext.BaseDirectory,
+            "Assets", "Cursors",
+            "wobbi-pat-pressed-reference.cur"
+        ));
+
+        _patHoldingCursor = new Cursor(Path.Combine(
+            AppContext.BaseDirectory,
+            "Assets", "Cursors",
+            "wobbi-pat-holding-reference.cur"
+        ));
+
+        HeadPatZone.Cursor = _patHoverCursor;
+
+        _patHoldTimer.Tick += PatHoldTimer_Tick;
+
 
         WindowStartupLocation = WindowStartupLocation.Manual;
         Loaded += MainWindow_Loaded;
@@ -158,6 +333,7 @@ public partial class MainWindow : Window
         _miniGlanceTimer.Interval = TimeSpan.FromSeconds(8);
         _miniGlanceTimer.Tick += MiniGlanceTimer_Tick;
         _miniGlanceTimer.Start();
+        _sleepyScritchTimer.Tick += SleepyScritchTimer_Tick;
 
 
         _autoSnoozeTimer.Tick += (_, _) =>
@@ -228,6 +404,112 @@ public partial class MainWindow : Window
         ApplyPreferencesMenu();
     }
 
+
+    private void StartHeadScritchies()
+    {
+        // Don't let an earlier happy-pat timer
+        // interrupt the scritching expression.
+        _happyResetTimer.Stop();
+        // Cancel any previous lingering sleepy smile.
+        _sleepyScritchTimer.Stop();
+        StopHeartParticles();
+
+        // Stop any previous bounce.
+        _petBounce.BeginAnimation(
+            TranslateTransform.YProperty, null);
+        _petBounce.Y = 0;
+
+        // Show sleepy closed eyes with our new smile.
+        OpenEyes.Visibility = Visibility.Collapsed;
+        ClosedEyes.Visibility = Visibility.Collapsed;
+        HappyEyes.Visibility = Visibility.Collapsed;
+        SleepEyes.Visibility = Visibility.Collapsed;
+        ScritchEyes.Visibility = Visibility.Visible;
+
+        // Prevent normal blinking during scritchies.
+        _isHappy = true;
+
+        // Reset any previous curious tilt.
+        _curiousTilt.BeginAnimation(
+            RotateTransform.AngleProperty, null);
+        _curiousTilt.Angle = 0;
+
+        // No swaying when sleeping or reduced motion is enabled.
+        if (_isSleeping || _reducedAnimations)
+            return;
+
+        // Gentle side-to-side movement, like purring!
+        var sway = new DoubleAnimation
+        {
+            From = -1.5,
+            To = 1.5,
+            Duration = TimeSpan.FromMilliseconds(750),
+            AutoReverse = true,
+            RepeatBehavior = RepeatBehavior.Forever,
+            EasingFunction = new SineEase
+            {
+                EasingMode = EasingMode.EaseInOut
+            }
+        };
+
+        _curiousTilt.BeginAnimation(
+            RotateTransform.AngleProperty, sway);
+    }
+
+
+    private void StopHeadScritchies()
+    {
+        // Stop Wobbi's gentle swaying.
+        _curiousTilt.BeginAnimation(
+            RotateTransform.AngleProperty, null);
+
+        _curiousTilt.Angle = 0;
+        _isHappy = false;
+
+        if (_isSleeping)
+        {
+            // Stay asleep, but keep smiling a little longer!
+            OpenEyes.Visibility = Visibility.Collapsed;
+            ClosedEyes.Visibility = Visibility.Collapsed;
+            HappyEyes.Visibility = Visibility.Collapsed;
+            SleepEyes.Visibility = Visibility.Collapsed;
+
+            ScritchEyes.Visibility = Visibility.Visible;
+
+            _sleepyScritchTimer.Stop();
+            _sleepyScritchTimer.Start();
+        }
+        else
+        {
+            // Awake Wobbi returns to his normal face.
+            ScritchEyes.Visibility = Visibility.Collapsed;
+            ReturnToIdleFace();
+        }
+    }
+
+    private void SleepyScritchTimer_Tick(
+        object? sender,
+        EventArgs e)
+    {
+        _sleepyScritchTimer.Stop();
+
+        // Don't interrupt a new scritching session.
+        if (_isHoldingPat)
+            return;
+
+        // Hide the contented smile.
+        ScritchEyes.Visibility = Visibility.Collapsed;
+
+        // Return to normal sleepy Wobbi.
+        if (_isSleeping)
+        {
+            SleepEyes.Visibility = Visibility.Visible;
+        }
+    }
+
+
+
+
     private void BlinkTimer_Tick(object? sender, EventArgs e)
     {
         if (_isSleeping || _isHappy)
@@ -261,6 +543,8 @@ public partial class MainWindow : Window
 
     private void ToggleSleep()
     {
+        _sleepyScritchTimer.Stop();
+        ScritchEyes.Visibility = Visibility.Collapsed;
         _isSleeping = !_isSleeping;
         _happyResetTimer.Stop();
         StopHeartParticles();
@@ -812,6 +1096,12 @@ public partial class MainWindow : Window
 
         ClassicAppearanceMenuItem.IsChecked = _appearance == WobbiAppearance.Classic;
         LavenderAppearanceMenuItem.IsChecked = _appearance == WobbiAppearance.Lavender;
+
+        ScritchEyes.Source = new Uri(
+            $"pack://application:,,,/{folder}wobbi-scritch.svg",
+            UriKind.Absolute
+        );
+
     }
 
     private void CalmPersonality_Click(object sender, RoutedEventArgs e)
@@ -911,6 +1201,12 @@ public partial class MainWindow : Window
     {
         if (_isMiniMode)
         {
+            // Clear a lingering smile before minimizing.
+            _sleepyScritchTimer.Stop();
+            ScritchEyes.Visibility = Visibility.Collapsed;
+
+            if (_isSleeping)
+                SleepEyes.Visibility = Visibility.Visible;
             // Remember Full Wobbi's position.
             _fullModeLeft = Left;
             _fullModeTop = Top;
@@ -1140,6 +1436,31 @@ public partial class MainWindow : Window
             )
         );
     }
+
+
+    private void PlayScritchReleaseBounce()
+    {
+        // A tiny, contented hop after scritchies.
+        var bounce = new DoubleAnimation
+        {
+            From = 0,
+            To = -8,
+            Duration = TimeSpan.FromMilliseconds(170),
+            AutoReverse = true,
+            RepeatBehavior = new RepeatBehavior(1),
+            FillBehavior = FillBehavior.Stop,
+            EasingFunction = new SineEase
+            {
+                EasingMode = EasingMode.EaseInOut
+            }
+        };
+
+        _petBounce.BeginAnimation(
+            TranslateTransform.YProperty,
+            bounce
+        );
+    }
+
 
 
 }
