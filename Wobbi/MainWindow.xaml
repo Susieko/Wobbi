@@ -3,8 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         Title="Wobbi"
-        Width="300"
-        Height="300"
+
+Width="260"
+Height="260"
+
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -37,6 +39,12 @@
               Header="Lavender Wobbi"
               IsCheckable="True"
               Click="LavenderAppearance_Click" />
+
+                    <MenuItem x:Name="CosmicAppearanceMenuItem"
+          Header="Cosmic Wobbi 🌌"
+          IsCheckable="True"
+          Click="CosmicAppearance_Click"/>
+
                 </MenuItem>
                 <MenuItem Header="Personality">
                     <MenuItem x:Name="CalmPersonalityMenuItem"
@@ -127,6 +135,18 @@
     Visibility="Collapsed"
     IsHitTestVisible="False"/>
 
+
+            <!-- Wobbi v0.4.1 — Cosmic appearance -->
+
+            <Image x:Name="CosmicImage"
+       Source="/Wobbi;component/Assets/Cosmic/wobbi.png"
+       Stretch="Uniform"
+       Visibility="Collapsed"
+       IsHitTestVisible="False"
+       RenderOptions.BitmapScalingMode="HighQuality"
+       Panel.ZIndex="0"/>
+
+
             <!-- Animated sleeping particles -->
             <Viewbox x:Name="SleepParticles"
          Stretch="Uniform"
@@ -203,11 +223,11 @@
 
             <!-- Wobbi v0.4.1: Forehead patting zone -->
             <Border x:Name="HeadPatZone"
-        Width="90"
+        Width="77"
         Height="28"
+                    Margin="63,73,0,0"
         HorizontalAlignment="Left"
         VerticalAlignment="Top"
-        Margin="74,85,0,0"
         Background="Transparent"
         CornerRadius="14"
         Cursor="Hand"
@@ -307,9 +327,6 @@
        VerticalAlignment="Center"
        Visibility="Collapsed"
        IsHitTestVisible="False"/>
-
-
-
 
             <!-- Mini Wobbi notification badge -->
             <Ellipse x:Name="MiniNotificationBadge"

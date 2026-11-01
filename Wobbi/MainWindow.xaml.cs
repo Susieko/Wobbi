@@ -236,6 +236,15 @@ public partial class MainWindow : Window
     private bool _showSpeechBubbles = true;
     private bool _reducedAnimations = false;
 
+    private ImageSource? _cosmicIdleSource;
+    private BitmapImage? _cosmicBlinkSource;
+
+    private BitmapImage? _cosmicHappySource;
+
+    private BitmapImage? _cosmicScritchSource;
+
+
+
 
     // Wobbi v0.4.1 — Head scritchies
     private Cursor? _patHoverCursor;
@@ -429,6 +438,18 @@ public partial class MainWindow : Window
         // Prevent normal blinking during scritchies.
         _isHappy = true;
 
+
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            _cosmicScritchSource ??= new BitmapImage(
+                new Uri(
+                    "pack://application:,,,/Wobbi;component/Assets/Cosmic/wobbi-scritch.png",
+                    UriKind.Absolute));
+
+            CosmicImage.Source = _cosmicScritchSource;
+        }
+
+
         // Reset any previous curious tilt.
         _curiousTilt.BeginAnimation(
             RotateTransform.AngleProperty, null);
@@ -504,6 +525,12 @@ public partial class MainWindow : Window
         if (_isSleeping)
         {
             SleepEyes.Visibility = Visibility.Visible;
+
+            if (_appearance == WobbiAppearance.Cosmic)
+            {
+                CosmicImage.Source = _cosmicBlinkSource;
+            }
+
         }
     }
 
@@ -512,6 +539,41 @@ public partial class MainWindow : Window
 
     private void BlinkTimer_Tick(object? sender, EventArgs e)
     {
+
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            if (_isSleeping || _isHappy || _isHoldingPat)
+                return;
+
+            if (!_isBlinking)
+            {
+                _cosmicBlinkSource ??= new BitmapImage(
+                    new Uri(
+                        "pack://application:,,,/Wobbi;component/Assets/Cosmic/wobbi-blink.png",
+                        UriKind.Absolute));
+
+                CosmicImage.Source = _cosmicBlinkSource;
+
+                _isBlinking = true;
+                _blinkTimer.Interval =
+                    TimeSpan.FromMilliseconds(140);
+            }
+            else
+            {
+                CosmicImage.Source = _cosmicIdleSource;
+
+                _isBlinking = false;
+
+                double nextBlink =
+                    2.5 + _random.NextDouble() * 3;
+
+                _blinkTimer.Interval =
+                    TimeSpan.FromSeconds(nextBlink);
+            }
+
+            return;
+        }
+
         if (_isSleeping || _isHappy)
         {
             return;
@@ -581,6 +643,23 @@ public partial class MainWindow : Window
         {
             StopSleepParticles();
         }
+
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            // Reuse Cosmic's closed-eye blink artwork.
+            _cosmicBlinkSource ??= new BitmapImage(
+                new Uri(
+                    "pack://application:,,,/Wobbi;component/Assets/Cosmic/wobbi-blink.png",
+                    UriKind.Absolute));
+
+            CosmicImage.Source = _isSleeping
+                ? _cosmicBlinkSource
+                : _cosmicIdleSource;
+
+            // Reset the blink state on sleep/wake.
+            _isBlinking = false;
+        }
+
     }
 
     private void PlayAutoWakeHop()
@@ -897,6 +976,18 @@ public partial class MainWindow : Window
     {
         _isHappy = true;
 
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            _cosmicHappySource ??= new BitmapImage(
+                new Uri(
+                    "pack://application:,,,/Wobbi;component/Assets/Cosmic/wobbi-happy.png",
+                    UriKind.Absolute));
+
+            CosmicImage.Source = _cosmicHappySource;
+            return;
+        }
+
+
         OpenEyes.Visibility = Visibility.Collapsed;
         ClosedEyes.Visibility = Visibility.Collapsed;
         SleepEyes.Visibility = Visibility.Collapsed;
@@ -906,6 +997,13 @@ public partial class MainWindow : Window
     private void ReturnToIdleFace()
     {
         _isHappy = false;
+
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            CosmicImage.Source = _cosmicIdleSource;
+            return;
+        }
+
 
         HappyEyes.Visibility = Visibility.Collapsed;
         ClosedEyes.Visibility = Visibility.Collapsed;
@@ -1065,6 +1163,12 @@ public partial class MainWindow : Window
     private void LavenderAppearance_Click(object sender, RoutedEventArgs e)
         => SetAppearance(WobbiAppearance.Lavender);
 
+
+    private void CosmicAppearance_Click(
+    object sender, RoutedEventArgs e)
+    => SetAppearance(WobbiAppearance.Cosmic);
+
+
     private void SetAppearance(WobbiAppearance appearance)
     {
         if (_appearance == appearance)
@@ -1078,31 +1182,115 @@ public partial class MainWindow : Window
         _appearanceSettings.Save(appearance);
     }
 
+
     private void ApplyAppearance()
     {
-        // Classic retains the ORIGINAL files; no need to move or rename them.
-        string folder = _appearance == WobbiAppearance.Lavender
+        bool isCosmic =
+            _appearance == WobbiAppearance.Cosmic;
+
+        // Update appearance menu checkmarks.
+        ClassicAppearanceMenuItem.IsChecked =
+            _appearance == WobbiAppearance.Classic;
+
+        LavenderAppearanceMenuItem.IsChecked =
+            _appearance == WobbiAppearance.Lavender;
+
+        CosmicAppearanceMenuItem.IsChecked = isCosmic;
+
+        // Cosmic currently uses its approved idle artwork.
+        CosmicImage.Visibility = isCosmic
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+
+        // Hide the original SVG artwork whenever Cosmic is selected.
+        // Opacity stays at 0 even when animation timers
+        // change the SVGs' Visibility properties.
+
+        double originalOpacity = isCosmic ? 0 : 1;
+
+        OpenEyes.Opacity = originalOpacity;
+        ClosedEyes.Opacity = originalOpacity;
+        SleepEyes.Opacity = originalOpacity;
+        HappyEyes.Opacity = originalOpacity;
+        ScritchEyes.Opacity = originalOpacity;
+
+
+        if (isCosmic)
+        {
+            // Keep Cosmic's approved idle artwork ready.
+            _cosmicIdleSource ??= CosmicImage.Source;
+            CosmicImage.Source = _cosmicIdleSource;
+
+            _isBlinking = false;
+            _blinkTimer.Interval = TimeSpan.FromSeconds(3);
+        }
+
+
+        if (isCosmic)
+        {
+            // Hide all Classic/Lavender expressions.
+            OpenEyes.Visibility = Visibility.Collapsed;
+            ClosedEyes.Visibility = Visibility.Collapsed;
+            SleepEyes.Visibility = Visibility.Collapsed;
+            HappyEyes.Visibility = Visibility.Collapsed;
+            ScritchEyes.Visibility = Visibility.Collapsed;
+
+            // Show our approved Cosmic artwork.
+            CosmicImage.Visibility = Visibility.Visible;
+            return;
+        }
+
+        // Hide Cosmic when switching back.
+        CosmicImage.Visibility = Visibility.Collapsed;
+
+        // Restore the correct Classic/Lavender expression.
+        OpenEyes.Visibility = Visibility.Collapsed;
+        ClosedEyes.Visibility = Visibility.Collapsed;
+        SleepEyes.Visibility = Visibility.Collapsed;
+        HappyEyes.Visibility = Visibility.Collapsed;
+        ScritchEyes.Visibility = Visibility.Collapsed;
+
+        if (_isSleeping)
+            SleepEyes.Visibility = Visibility.Visible;
+        else if (_isHoldingPat)
+            ScritchEyes.Visibility = Visibility.Visible;
+        else if (_isHappy)
+            HappyEyes.Visibility = Visibility.Visible;
+        else
+            OpenEyes.Visibility = Visibility.Visible;
+
+
+        // Classic and Lavender keep their existing SVGs.
+        string folder =
+            _appearance == WobbiAppearance.Lavender
             ? "Assets/Lavender/"
             : "Assets/";
 
-        OpenEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi.svg",
-                                  UriKind.Absolute);
-        ClosedEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi-blink.svg",
-                                    UriKind.Absolute);
-        SleepEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi-sleep.svg",
-                                   UriKind.Absolute);
-        HappyEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi-happy.svg",
-                                   UriKind.Absolute);
+        string baseUri =
+            $"pack://application:,,,/Wobbi;component/{folder}";
 
-        ClassicAppearanceMenuItem.IsChecked = _appearance == WobbiAppearance.Classic;
-        LavenderAppearanceMenuItem.IsChecked = _appearance == WobbiAppearance.Lavender;
+        OpenEyes.Source = new Uri(
+            baseUri + "wobbi.svg",
+            UriKind.Absolute);
+
+        ClosedEyes.Source = new Uri(
+            baseUri + "wobbi-blink.svg",
+            UriKind.Absolute);
+
+        SleepEyes.Source = new Uri(
+            baseUri + "wobbi-sleep.svg",
+            UriKind.Absolute);
+
+        HappyEyes.Source = new Uri(
+            baseUri + "wobbi-happy.svg",
+            UriKind.Absolute);
 
         ScritchEyes.Source = new Uri(
-            $"pack://application:,,,/{folder}wobbi-scritch.svg",
-            UriKind.Absolute
-        );
-
+            baseUri + "wobbi-scritch.svg",
+            UriKind.Absolute);
     }
+
 
     private void CalmPersonality_Click(object sender, RoutedEventArgs e)
     => SetPersonality(WobbiPersonality.Calm);
@@ -1211,6 +1399,13 @@ public partial class MainWindow : Window
             _fullModeLeft = Left;
             _fullModeTop = Top;
             SetMiniFace("mini-idle.png");
+
+            // Always use the original Mini Wobbi,
+            // regardless of the selected Full Mode appearance.
+            MiniFrameTestImage.Visibility = Visibility.Visible;
+            MiniBlinkImage.Visibility = Visibility.Collapsed;
+            _miniBlinking = false;
+
             _miniLookingAround = false;
             _miniGlanceTimer.Interval = TimeSpan.FromSeconds(8);
 
@@ -1249,8 +1444,10 @@ public partial class MainWindow : Window
             MiniView.Visibility = Visibility.Collapsed;
 
             // Restore the original window size.
-            Width = 300;
-            Height = 300;
+
+            Width = 260;
+            Height = 260;
+
 
             // Return Full Wobbi to his previous position!
             Left = _fullModeLeft;
@@ -1330,7 +1527,9 @@ public partial class MainWindow : Window
     private void MiniBlinkTimer_Tick(
         object? sender,
         EventArgs e)
+
     {
+
         // Only animate when Mini Wobbi is awake.
         if (!_isMiniMode || _isSleeping)
         {
