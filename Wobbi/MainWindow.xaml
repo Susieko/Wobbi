@@ -3,9 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         Title="Wobbi"
-        Icon="pack://application:,,,/Assets/Wobbi.ico"
-        Width="300"
-        Height="300"
+
+Width="260"
+Height="260"
+
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -38,6 +39,12 @@
               Header="Lavender Wobbi"
               IsCheckable="True"
               Click="LavenderAppearance_Click" />
+
+                    <MenuItem x:Name="CosmicAppearanceMenuItem"
+          Header="Cosmic Wobbi 🌌"
+          IsCheckable="True"
+          Click="CosmicAppearance_Click"/>
+
                 </MenuItem>
                 <MenuItem Header="Personality">
                     <MenuItem x:Name="CalmPersonalityMenuItem"
@@ -65,6 +72,16 @@
               Click="ReducedAnimations_Click"/>
                 </MenuItem>
 
+
+
+                <MenuItem x:Name="AutoSnoozeMenuItem"
+          Header="Auto-snooze after 5 minutes"
+          IsCheckable="True"
+          IsChecked="True"
+          Click="AutoSnooze_Click"/>
+
+
+
                 <Separator/>
 
 
@@ -87,7 +104,7 @@
             <!-- Normal Wobbi -->
             <svgc:SvgViewbox
                 x:Name="OpenEyes"
-                Source="pack://application:,,,/Assets/wobbi.svg"
+                Source="pack://application:,,,/Wobbi;component/Assets/wobbi.svg"
                 Stretch="Uniform"/>
 
             <!-- Blinking Wobbi -->
@@ -109,6 +126,25 @@
                  Source="pack://application:,,,/Assets/wobbi-happy.svg"
                  Stretch="Uniform"
                  Visibility="Collapsed"/>
+
+            <!-- Wobbi v0.4.1 — Head scritching expression -->
+            <svgc:SvgViewbox
+    x:Name="ScritchEyes"
+    Source="pack://application:,,,/Assets/wobbi-scritch.svg"
+    Stretch="Uniform"
+    Visibility="Collapsed"
+    IsHitTestVisible="False"/>
+
+
+            <!-- Wobbi v0.4.1 — Cosmic appearance -->
+
+            <Image x:Name="CosmicImage"
+       Source="/Wobbi;component/Assets/Cosmic/wobbi.png"
+       Stretch="Uniform"
+       Visibility="Collapsed"
+       IsHitTestVisible="False"
+       RenderOptions.BitmapScalingMode="HighQuality"
+       Panel.ZIndex="0"/>
 
 
             <!-- Animated sleeping particles -->
@@ -184,6 +220,21 @@
                    Opacity="0"/>
                 </Canvas>
             </Viewbox>
+
+            <!-- Wobbi v0.4.1: Forehead patting zone -->
+            <Border x:Name="HeadPatZone"
+        Width="77"
+        Height="28"
+                    Margin="63,73,0,0"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Background="Transparent"
+        CornerRadius="14"
+        Cursor="Hand"
+        Panel.ZIndex="100"
+        MouseLeftButtonDown="HeadPatZone_MouseLeftButtonDown"
+        MouseLeftButtonUp="HeadPatZone_MouseLeftButtonUp"
+        LostMouseCapture="HeadPatZone_LostMouseCapture"/>
 
         </Grid>
 
@@ -277,9 +328,6 @@
        Visibility="Collapsed"
        IsHitTestVisible="False"/>
 
-
-
-
             <!-- Mini Wobbi notification badge -->
             <Ellipse x:Name="MiniNotificationBadge"
          Width="14"
@@ -293,6 +341,37 @@
          Panel.ZIndex="10"
          IsHitTestVisible="False"
          Visibility="Collapsed"/>
+
+
+            <!-- Mini Wobbi's welcome-back bubble -->
+            <Popup x:Name="MiniWakePopup"
+       PlacementTarget="{Binding ElementName=MiniView}"
+       Placement="Top"
+       VerticalOffset="-5"
+       AllowsTransparency="True"
+       StaysOpen="True"
+       IsOpen="False"
+       IsHitTestVisible="False">
+
+                <StackPanel HorizontalAlignment="Center">
+                    <Border Background="#F1E6FF"
+                BorderBrush="#BDA4E8"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="12,8">
+
+                        <TextBlock Text="Oh! You're back! 💜"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       Foreground="#30254A"/>
+                    </Border>
+
+                    <!-- Tiny speech bubble tail -->
+                    <Path Data="M 0 0 L 14 0 L 7 8 Z"
+              Fill="#F1E6FF"
+              HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Popup>
 
         </Grid>
 

@@ -7,10 +7,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<ApplicationIcon>Assets\Wobbi.ico</ApplicationIcon>
-	  <Version>0.4.0</Version>
+	  <Version>0.4.1</Version>
   </PropertyGroup>
 
-  <ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Assets\Cursors\*.cur" />
+		<Content Include="Assets\Cursors\*.cur" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+    <None Remove="Assets\Cosmic\wobbi.png" />
     <None Remove="Assets\Mini\mini-idle.png" />
 	  <None Remove="Assets\Mini\mini-blink.png" />
 
@@ -26,6 +34,21 @@
   </ItemGroup>
 
   <ItemGroup>
+
+	  <None Remove="Assets\Cosmic\wobbi-blink.png" />
+
+	  <None Remove="Assets\Cosmic\wobbi-happy.png" />
+
+	  <Resource Include="Assets\Cosmic\wobbi-happy.png" />
+
+	  <None Remove="Assets\Cosmic\wobbi-scritch.png" />
+	  <Resource Include="Assets\Cosmic\wobbi-scritch.png" />
+
+	  <Resource Include="Assets\Cosmic\wobbi-blink.png" />
+	  <Resource Include="Assets\Cosmic\wobbi.png">
+	  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Assets\Lavender\wobbi-scritch.svg" />
 	<Resource Include="Assets\Mini\mini-idle.png">
 	  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	</Resource>
@@ -36,12 +59,15 @@
 
 	  <Resource Include="Assets\Mini\mini-look-left.png" />
 	  <Resource Include="Assets\Mini\mini-look-right.png" />
+	  <Resource Include="Assets\wobbi-sleep.svg" />
 
 	  <Resource Include="Assets\Wobbi.ico" />
     <Resource Include="Assets\wobbi-happy.svg" />
-    <Resource Include="Assets\wobbi-sleep.svg" />
+    <Resource Include="Assets\wobbi-scritch.svg" />
     <Resource Include="Assets\wobbi-blink.svg" />
-    <Resource Include="Assets\wobbi.svg" />
+    <Resource Include="Assets\wobbi.svg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
 	  <Resource Include="Assets\Lavender\wobbi.svg" />
 	  <Resource Include="Assets\Lavender\wobbi-blink.svg" />
 	  <Resource Include="Assets\Lavender\wobbi-sleep.svg" />

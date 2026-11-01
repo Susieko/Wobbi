@@ -1,7 +1,9 @@
-﻿namespace Wobbi.Models;
+﻿
+namespace Wobbi.Models;
 
 public enum WobbiAppearance
 {
     Classic,
-    Lavender
+    Lavender,
+    Cosmic
 }

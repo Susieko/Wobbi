@@ -20,6 +20,9 @@ public sealed class AppearanceSettingsService
         public bool ReducedAnimations { get; set; } = false;
         public bool MiniMode { get; set; } = false;
 
+        public bool AutoSnooze { get; set; } = true;
+
+
     }
 
     private static SettingsData ReadSettings()
@@ -116,5 +119,19 @@ public sealed class AppearanceSettingsService
         settings.MiniMode = enabled;
         WriteSettings(settings);
     }
+
+
+    public bool LoadAutoSnooze()
+    {
+        return ReadSettings().AutoSnooze;
+    }
+
+    public void SaveAutoSnooze(bool enabled)
+    {
+        SettingsData settings = ReadSettings();
+        settings.AutoSnooze = enabled;
+        WriteSettings(settings);
+    }
+
 
 }

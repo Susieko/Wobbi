@@ -11,7 +11,7 @@ using Wobbi.Models;
 using Wobbi.Animations;
 using System.Windows.Media.Imaging;
 namespace Wobbi;
-
+using System.IO;
 public partial class MainWindow : Window
 {
 
@@ -36,6 +36,28 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _miniBlinkTimer = new();
     private bool _miniBlinking = false;
 
+
+    private readonly DispatcherTimer _autoSnoozeTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(2)
+    };
+
+
+    private readonly DispatcherTimer _sleepyScritchTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(1)
+    };
+
+
+    private bool _isAutoSnoozing = false;
+
+    private bool _autoSnoozeEnabled = true;
+
+
+    private readonly DispatcherTimer _miniWakeBubbleTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(5)
+    };
 
 
     private void Window_MouseLeftButtonDown(
@@ -77,6 +99,120 @@ public partial class MainWindow : Window
     }
 
 
+
+
+    private void HeadPatZone_MouseLeftButtonDown(
+        object sender,
+        MouseButtonEventArgs e)
+    {
+        if (_isMiniMode || e.ChangedButton != MouseButton.Left)
+            return;
+
+        // Keep double-click Mini Mode working.
+        if (e.ClickCount == 2)
+            return;
+
+        e.Handled = true;
+
+        _isPatting = true;
+        _isHoldingPat = false;
+
+        // Hand changes to pressed pose.
+        HeadPatZone.Cursor = _patPressedCursor;
+
+        // Keep receiving mouse events until release.
+        if (!HeadPatZone.CaptureMouse())
+        {
+            CancelPatGesture();
+            return;
+        }
+
+        // Begin detecting a longer head scritch.
+        _patHoldTimer.Stop();
+        _patHoldTimer.Start();
+    }
+
+
+    private void PatHoldTimer_Tick(
+        object? sender,
+        EventArgs e)
+    {
+        _patHoldTimer.Stop();
+
+        if (!_isPatting ||
+            Mouse.LeftButton != MouseButtonState.Pressed)
+            return;
+
+        // Wobbi is receiving head scritchies!
+        _isHoldingPat = true;
+
+        HeadPatZone.Cursor = _patHoldingCursor;
+        StartHeadScritchies();
+    }
+
+    private void HeadPatZone_MouseLeftButtonUp(
+        object sender,
+        MouseButtonEventArgs e)
+
+    {
+        if (!_isPatting)
+            return;
+
+        e.Handled = true;
+
+        bool wasHolding = _isHoldingPat;
+
+        CancelPatGesture();
+
+        // A short click is a regular happy pat.
+        if (!wasHolding && !_isSleeping)
+        {
+            PetWobbi_Click(sender, e);
+        }
+
+        if (wasHolding && !_isSleeping && !_reducedAnimations)
+        {
+            PlayScritchReleaseBounce();
+        }
+
+
+        // Long-hold reactions arrive in Step 4.
+    }
+
+
+
+
+    private void CancelPatGesture()
+    {
+        bool wasHolding = _isHoldingPat;
+
+        _patHoldTimer.Stop();
+
+        _isPatting = false;
+        _isHoldingPat = false;
+
+        HeadPatZone.Cursor = _patHoverCursor;
+
+        // Return to normal when the hold ends.
+        if (wasHolding)
+            StopHeadScritchies();
+
+        if (HeadPatZone.IsMouseCaptured)
+            HeadPatZone.ReleaseMouseCapture();
+    }
+
+
+    private void HeadPatZone_LostMouseCapture(
+        object sender,
+        MouseEventArgs e)
+    {
+        // Prevent a stuck patting state if
+        // mouse capture is interrupted.
+        if (_isPatting)
+            CancelPatGesture();
+    }
+
+
     private ChatWindow? _chatWindow;
 
     // The same speech bubble is used for replies and animated thinking dots.
@@ -100,15 +236,81 @@ public partial class MainWindow : Window
     private bool _showSpeechBubbles = true;
     private bool _reducedAnimations = false;
 
+    private ImageSource? _cosmicIdleSource;
+    private BitmapImage? _cosmicBlinkSource;
+
+    private BitmapImage? _cosmicHappySource;
+
+    private BitmapImage? _cosmicScritchSource;
+
+
+
+
+    // Wobbi v0.4.1 — Head scritchies
+    private Cursor? _patHoverCursor;
+    private Cursor? _patPressedCursor;
+    private Cursor? _patHoldingCursor;
+
+    private bool _isPatting;
+    private bool _isHoldingPat;
+
+    private readonly DispatcherTimer _patHoldTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(350)
+    };
+
+
     public MainWindow()
     {
         InitializeComponent();
+
+
+        // Wobbi v0.4.1 — Custom patting cursor
+
+        string cursorPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Assets",
+            "Cursors",
+            "wobbi-pat-hover-reference.cur"
+        );
+
+        if (!File.Exists(cursorPath))
+        {
+            throw new FileNotFoundException(
+                "Wobbi's patting cursor is missing!",
+                cursorPath
+            );
+        }
+
+
+        // Load all three cursor poses
+        _patHoverCursor = new Cursor(cursorPath);
+
+        _patPressedCursor = new Cursor(Path.Combine(
+            AppContext.BaseDirectory,
+            "Assets", "Cursors",
+            "wobbi-pat-pressed-reference.cur"
+        ));
+
+        _patHoldingCursor = new Cursor(Path.Combine(
+            AppContext.BaseDirectory,
+            "Assets", "Cursors",
+            "wobbi-pat-holding-reference.cur"
+        ));
+
+        HeadPatZone.Cursor = _patHoverCursor;
+
+        _patHoldTimer.Tick += PatHoldTimer_Tick;
+
 
         WindowStartupLocation = WindowStartupLocation.Manual;
         Loaded += MainWindow_Loaded;
         // Read preferences before starting Wobbi's idle animations.
         _showSpeechBubbles = _appearanceSettings.LoadShowSpeechBubbles();
         _reducedAnimations = _appearanceSettings.LoadReducedAnimations();
+
+        _autoSnoozeEnabled = _appearanceSettings.LoadAutoSnooze();
+
 
         var transforms = new TransformGroup();
         transforms.Children.Add(_breathing);
@@ -140,6 +342,69 @@ public partial class MainWindow : Window
         _miniGlanceTimer.Interval = TimeSpan.FromSeconds(8);
         _miniGlanceTimer.Tick += MiniGlanceTimer_Tick;
         _miniGlanceTimer.Start();
+        _sleepyScritchTimer.Tick += SleepyScritchTimer_Tick;
+
+
+        _autoSnoozeTimer.Tick += (_, _) =>
+        {
+            // Don't automatically sleep or wake when disabled.
+            if (!_autoSnoozeEnabled)
+                return;
+
+            TimeSpan? idleTime = WindowsIdleService.GetIdleTime();
+
+
+            if (idleTime == null)
+                return;
+
+            // Fall asleep after 5 minutes of inactivity.
+            if (idleTime.Value >= TimeSpan.FromMinutes(5))
+            {
+                if (!_isSleeping)
+                {
+                    _isAutoSnoozing = true;
+                    ToggleSleep();
+                }
+            }
+            // Wake only if the nap started automatically.
+
+            else if (_isAutoSnoozing)
+            {
+                _isAutoSnoozing = false;
+
+
+                if (_isSleeping)
+                {
+                    ToggleSleep();
+                    PlayAutoWakeHop();
+
+                    if (_isMiniMode)
+                    {
+                        if (_showSpeechBubbles)
+                        {
+                            _miniWakeBubbleTimer.Stop();
+                            MiniWakePopup.IsOpen = true;
+                            _miniWakeBubbleTimer.Start();
+                        }
+                    }
+                    else
+                    {
+                        ShowSpeechBubble("Oh! You're back! 💜");
+                    }
+                }
+
+
+            }
+
+        };
+
+        _autoSnoozeTimer.Start();
+
+        _miniWakeBubbleTimer.Tick += (_, _) =>
+        {
+            _miniWakeBubbleTimer.Stop();
+            MiniWakePopup.IsOpen = false;
+        };
 
         _appearance = _appearanceSettings.Load();
         ApplyAppearance();
@@ -148,8 +413,167 @@ public partial class MainWindow : Window
         ApplyPreferencesMenu();
     }
 
+
+    private void StartHeadScritchies()
+    {
+        // Don't let an earlier happy-pat timer
+        // interrupt the scritching expression.
+        _happyResetTimer.Stop();
+        // Cancel any previous lingering sleepy smile.
+        _sleepyScritchTimer.Stop();
+        StopHeartParticles();
+
+        // Stop any previous bounce.
+        _petBounce.BeginAnimation(
+            TranslateTransform.YProperty, null);
+        _petBounce.Y = 0;
+
+        // Show sleepy closed eyes with our new smile.
+        OpenEyes.Visibility = Visibility.Collapsed;
+        ClosedEyes.Visibility = Visibility.Collapsed;
+        HappyEyes.Visibility = Visibility.Collapsed;
+        SleepEyes.Visibility = Visibility.Collapsed;
+        ScritchEyes.Visibility = Visibility.Visible;
+
+        // Prevent normal blinking during scritchies.
+        _isHappy = true;
+
+
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            _cosmicScritchSource ??= new BitmapImage(
+                new Uri(
+                    "pack://application:,,,/Wobbi;component/Assets/Cosmic/wobbi-scritch.png",
+                    UriKind.Absolute));
+
+            CosmicImage.Source = _cosmicScritchSource;
+        }
+
+
+        // Reset any previous curious tilt.
+        _curiousTilt.BeginAnimation(
+            RotateTransform.AngleProperty, null);
+        _curiousTilt.Angle = 0;
+
+        // No swaying when sleeping or reduced motion is enabled.
+        if (_isSleeping || _reducedAnimations)
+            return;
+
+        // Gentle side-to-side movement, like purring!
+        var sway = new DoubleAnimation
+        {
+            From = -1.5,
+            To = 1.5,
+            Duration = TimeSpan.FromMilliseconds(750),
+            AutoReverse = true,
+            RepeatBehavior = RepeatBehavior.Forever,
+            EasingFunction = new SineEase
+            {
+                EasingMode = EasingMode.EaseInOut
+            }
+        };
+
+        _curiousTilt.BeginAnimation(
+            RotateTransform.AngleProperty, sway);
+    }
+
+
+    private void StopHeadScritchies()
+    {
+        // Stop Wobbi's gentle swaying.
+        _curiousTilt.BeginAnimation(
+            RotateTransform.AngleProperty, null);
+
+        _curiousTilt.Angle = 0;
+        _isHappy = false;
+
+        if (_isSleeping)
+        {
+            // Stay asleep, but keep smiling a little longer!
+            OpenEyes.Visibility = Visibility.Collapsed;
+            ClosedEyes.Visibility = Visibility.Collapsed;
+            HappyEyes.Visibility = Visibility.Collapsed;
+            SleepEyes.Visibility = Visibility.Collapsed;
+
+            ScritchEyes.Visibility = Visibility.Visible;
+
+            _sleepyScritchTimer.Stop();
+            _sleepyScritchTimer.Start();
+        }
+        else
+        {
+            // Awake Wobbi returns to his normal face.
+            ScritchEyes.Visibility = Visibility.Collapsed;
+            ReturnToIdleFace();
+        }
+    }
+
+    private void SleepyScritchTimer_Tick(
+        object? sender,
+        EventArgs e)
+    {
+        _sleepyScritchTimer.Stop();
+
+        // Don't interrupt a new scritching session.
+        if (_isHoldingPat)
+            return;
+
+        // Hide the contented smile.
+        ScritchEyes.Visibility = Visibility.Collapsed;
+
+        // Return to normal sleepy Wobbi.
+        if (_isSleeping)
+        {
+            SleepEyes.Visibility = Visibility.Visible;
+
+            if (_appearance == WobbiAppearance.Cosmic)
+            {
+                CosmicImage.Source = _cosmicBlinkSource;
+            }
+
+        }
+    }
+
+
+
+
     private void BlinkTimer_Tick(object? sender, EventArgs e)
     {
+
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            if (_isSleeping || _isHappy || _isHoldingPat)
+                return;
+
+            if (!_isBlinking)
+            {
+                _cosmicBlinkSource ??= new BitmapImage(
+                    new Uri(
+                        "pack://application:,,,/Wobbi;component/Assets/Cosmic/wobbi-blink.png",
+                        UriKind.Absolute));
+
+                CosmicImage.Source = _cosmicBlinkSource;
+
+                _isBlinking = true;
+                _blinkTimer.Interval =
+                    TimeSpan.FromMilliseconds(140);
+            }
+            else
+            {
+                CosmicImage.Source = _cosmicIdleSource;
+
+                _isBlinking = false;
+
+                double nextBlink =
+                    2.5 + _random.NextDouble() * 3;
+
+                _blinkTimer.Interval =
+                    TimeSpan.FromSeconds(nextBlink);
+            }
+
+            return;
+        }
+
         if (_isSleeping || _isHappy)
         {
             return;
@@ -181,6 +605,8 @@ public partial class MainWindow : Window
 
     private void ToggleSleep()
     {
+        _sleepyScritchTimer.Stop();
+        ScritchEyes.Visibility = Visibility.Collapsed;
         _isSleeping = !_isSleeping;
         _happyResetTimer.Stop();
         StopHeartParticles();
@@ -217,6 +643,58 @@ public partial class MainWindow : Window
         {
             StopSleepParticles();
         }
+
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            // Reuse Cosmic's closed-eye blink artwork.
+            _cosmicBlinkSource ??= new BitmapImage(
+                new Uri(
+                    "pack://application:,,,/Wobbi;component/Assets/Cosmic/wobbi-blink.png",
+                    UriKind.Absolute));
+
+            CosmicImage.Source = _isSleeping
+                ? _cosmicBlinkSource
+                : _cosmicIdleSource;
+
+            // Reset the blink state on sleep/wake.
+            _isBlinking = false;
+        }
+
+    }
+
+    private void PlayAutoWakeHop()
+    {
+        if (_reducedAnimations)
+            return;
+
+        var hop = new DoubleAnimation
+        {
+            Duration = TimeSpan.FromMilliseconds(180),
+            AutoReverse = true,
+            FillBehavior = FillBehavior.Stop,
+            EasingFunction = new SineEase
+            {
+                EasingMode = EasingMode.EaseInOut
+            }
+        };
+
+        if (_isMiniMode)
+        {
+            // Hop the entire Mini Wobbi window.
+            hop.From = Top;
+            hop.To = Top - 12;
+
+            BeginAnimation(Window.TopProperty, hop);
+        }
+        else
+        {
+            // Hop Full Wobbi using his existing transform.
+            hop.From = 0;
+            hop.To = -18;
+
+            _petBounce.BeginAnimation(
+                TranslateTransform.YProperty, hop);
+        }
     }
 
 
@@ -224,8 +702,12 @@ public partial class MainWindow : Window
         object sender,
         RoutedEventArgs e)
     {
+        // Manual sleep/wake overrides Auto-Snooze.
+        _isAutoSnoozing = false;
+
         ToggleSleep();
     }
+
 
     private void PetWobbi_Click(
         object sender,
@@ -494,6 +976,18 @@ public partial class MainWindow : Window
     {
         _isHappy = true;
 
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            _cosmicHappySource ??= new BitmapImage(
+                new Uri(
+                    "pack://application:,,,/Wobbi;component/Assets/Cosmic/wobbi-happy.png",
+                    UriKind.Absolute));
+
+            CosmicImage.Source = _cosmicHappySource;
+            return;
+        }
+
+
         OpenEyes.Visibility = Visibility.Collapsed;
         ClosedEyes.Visibility = Visibility.Collapsed;
         SleepEyes.Visibility = Visibility.Collapsed;
@@ -503,6 +997,13 @@ public partial class MainWindow : Window
     private void ReturnToIdleFace()
     {
         _isHappy = false;
+
+        if (_appearance == WobbiAppearance.Cosmic)
+        {
+            CosmicImage.Source = _cosmicIdleSource;
+            return;
+        }
+
 
         HappyEyes.Visibility = Visibility.Collapsed;
         ClosedEyes.Visibility = Visibility.Collapsed;
@@ -662,6 +1163,12 @@ public partial class MainWindow : Window
     private void LavenderAppearance_Click(object sender, RoutedEventArgs e)
         => SetAppearance(WobbiAppearance.Lavender);
 
+
+    private void CosmicAppearance_Click(
+    object sender, RoutedEventArgs e)
+    => SetAppearance(WobbiAppearance.Cosmic);
+
+
     private void SetAppearance(WobbiAppearance appearance)
     {
         if (_appearance == appearance)
@@ -675,25 +1182,115 @@ public partial class MainWindow : Window
         _appearanceSettings.Save(appearance);
     }
 
+
     private void ApplyAppearance()
     {
-        // Classic retains the ORIGINAL files; no need to move or rename them.
-        string folder = _appearance == WobbiAppearance.Lavender
+        bool isCosmic =
+            _appearance == WobbiAppearance.Cosmic;
+
+        // Update appearance menu checkmarks.
+        ClassicAppearanceMenuItem.IsChecked =
+            _appearance == WobbiAppearance.Classic;
+
+        LavenderAppearanceMenuItem.IsChecked =
+            _appearance == WobbiAppearance.Lavender;
+
+        CosmicAppearanceMenuItem.IsChecked = isCosmic;
+
+        // Cosmic currently uses its approved idle artwork.
+        CosmicImage.Visibility = isCosmic
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+
+        // Hide the original SVG artwork whenever Cosmic is selected.
+        // Opacity stays at 0 even when animation timers
+        // change the SVGs' Visibility properties.
+
+        double originalOpacity = isCosmic ? 0 : 1;
+
+        OpenEyes.Opacity = originalOpacity;
+        ClosedEyes.Opacity = originalOpacity;
+        SleepEyes.Opacity = originalOpacity;
+        HappyEyes.Opacity = originalOpacity;
+        ScritchEyes.Opacity = originalOpacity;
+
+
+        if (isCosmic)
+        {
+            // Keep Cosmic's approved idle artwork ready.
+            _cosmicIdleSource ??= CosmicImage.Source;
+            CosmicImage.Source = _cosmicIdleSource;
+
+            _isBlinking = false;
+            _blinkTimer.Interval = TimeSpan.FromSeconds(3);
+        }
+
+
+        if (isCosmic)
+        {
+            // Hide all Classic/Lavender expressions.
+            OpenEyes.Visibility = Visibility.Collapsed;
+            ClosedEyes.Visibility = Visibility.Collapsed;
+            SleepEyes.Visibility = Visibility.Collapsed;
+            HappyEyes.Visibility = Visibility.Collapsed;
+            ScritchEyes.Visibility = Visibility.Collapsed;
+
+            // Show our approved Cosmic artwork.
+            CosmicImage.Visibility = Visibility.Visible;
+            return;
+        }
+
+        // Hide Cosmic when switching back.
+        CosmicImage.Visibility = Visibility.Collapsed;
+
+        // Restore the correct Classic/Lavender expression.
+        OpenEyes.Visibility = Visibility.Collapsed;
+        ClosedEyes.Visibility = Visibility.Collapsed;
+        SleepEyes.Visibility = Visibility.Collapsed;
+        HappyEyes.Visibility = Visibility.Collapsed;
+        ScritchEyes.Visibility = Visibility.Collapsed;
+
+        if (_isSleeping)
+            SleepEyes.Visibility = Visibility.Visible;
+        else if (_isHoldingPat)
+            ScritchEyes.Visibility = Visibility.Visible;
+        else if (_isHappy)
+            HappyEyes.Visibility = Visibility.Visible;
+        else
+            OpenEyes.Visibility = Visibility.Visible;
+
+
+        // Classic and Lavender keep their existing SVGs.
+        string folder =
+            _appearance == WobbiAppearance.Lavender
             ? "Assets/Lavender/"
             : "Assets/";
 
-        OpenEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi.svg",
-                                  UriKind.Absolute);
-        ClosedEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi-blink.svg",
-                                    UriKind.Absolute);
-        SleepEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi-sleep.svg",
-                                   UriKind.Absolute);
-        HappyEyes.Source = new Uri($"pack://application:,,,/{folder}wobbi-happy.svg",
-                                   UriKind.Absolute);
+        string baseUri =
+            $"pack://application:,,,/Wobbi;component/{folder}";
 
-        ClassicAppearanceMenuItem.IsChecked = _appearance == WobbiAppearance.Classic;
-        LavenderAppearanceMenuItem.IsChecked = _appearance == WobbiAppearance.Lavender;
+        OpenEyes.Source = new Uri(
+            baseUri + "wobbi.svg",
+            UriKind.Absolute);
+
+        ClosedEyes.Source = new Uri(
+            baseUri + "wobbi-blink.svg",
+            UriKind.Absolute);
+
+        SleepEyes.Source = new Uri(
+            baseUri + "wobbi-sleep.svg",
+            UriKind.Absolute);
+
+        HappyEyes.Source = new Uri(
+            baseUri + "wobbi-happy.svg",
+            UriKind.Absolute);
+
+        ScritchEyes.Source = new Uri(
+            baseUri + "wobbi-scritch.svg",
+            UriKind.Absolute);
     }
+
 
     private void CalmPersonality_Click(object sender, RoutedEventArgs e)
     => SetPersonality(WobbiPersonality.Calm);
@@ -754,11 +1351,26 @@ public partial class MainWindow : Window
         }
     }
 
+    private void AutoSnooze_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        _autoSnoozeEnabled = AutoSnoozeMenuItem.IsChecked;
+
+        _appearanceSettings.SaveAutoSnooze(
+            _autoSnoozeEnabled
+        );
+    }
+
+
+
     private void ApplyPreferencesMenu()
     {
         ShowSpeechBubblesMenuItem.IsChecked = _showSpeechBubbles;
         ReducedAnimationsMenuItem.IsChecked = _reducedAnimations;
+        AutoSnoozeMenuItem.IsChecked = _autoSnoozeEnabled;
     }
+
 
 
     private void ToggleMiniMode_Click(
@@ -777,10 +1389,23 @@ public partial class MainWindow : Window
     {
         if (_isMiniMode)
         {
+            // Clear a lingering smile before minimizing.
+            _sleepyScritchTimer.Stop();
+            ScritchEyes.Visibility = Visibility.Collapsed;
+
+            if (_isSleeping)
+                SleepEyes.Visibility = Visibility.Visible;
             // Remember Full Wobbi's position.
             _fullModeLeft = Left;
             _fullModeTop = Top;
             SetMiniFace("mini-idle.png");
+
+            // Always use the original Mini Wobbi,
+            // regardless of the selected Full Mode appearance.
+            MiniFrameTestImage.Visibility = Visibility.Visible;
+            MiniBlinkImage.Visibility = Visibility.Collapsed;
+            _miniBlinking = false;
+
             _miniLookingAround = false;
             _miniGlanceTimer.Interval = TimeSpan.FromSeconds(8);
 
@@ -819,8 +1444,10 @@ public partial class MainWindow : Window
             MiniView.Visibility = Visibility.Collapsed;
 
             // Restore the original window size.
-            Width = 300;
-            Height = 300;
+
+            Width = 260;
+            Height = 260;
+
 
             // Return Full Wobbi to his previous position!
             Left = _fullModeLeft;
@@ -900,7 +1527,9 @@ public partial class MainWindow : Window
     private void MiniBlinkTimer_Tick(
         object? sender,
         EventArgs e)
+
     {
+
         // Only animate when Mini Wobbi is awake.
         if (!_isMiniMode || _isSleeping)
         {
@@ -1006,6 +1635,31 @@ public partial class MainWindow : Window
             )
         );
     }
+
+
+    private void PlayScritchReleaseBounce()
+    {
+        // A tiny, contented hop after scritchies.
+        var bounce = new DoubleAnimation
+        {
+            From = 0,
+            To = -8,
+            Duration = TimeSpan.FromMilliseconds(170),
+            AutoReverse = true,
+            RepeatBehavior = new RepeatBehavior(1),
+            FillBehavior = FillBehavior.Stop,
+            EasingFunction = new SineEase
+            {
+                EasingMode = EasingMode.EaseInOut
+            }
+        };
+
+        _petBounce.BeginAnimation(
+            TranslateTransform.YProperty,
+            bounce
+        );
+    }
+
 
 
 }
