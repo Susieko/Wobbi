@@ -2,7 +2,7 @@
 
 **A tiny cosmic desktop companion with a surprisingly big personality.**
 
-**Current version: 0.4.0 — Mini Mode (early prototype)**
+**Current version: 0.4.1 — Cozy Companion Update (early prototype)**
 
 ## 🎬 See Wobbi in action
 
@@ -36,6 +36,31 @@ No paid AI subscription or cloud API key is required.
 - **Thinking and reply bubbles** — animated `.` → `..` → `...` while Ollama responds, followed by a short reply preview.
 - **Saved visual preferences** — show/hide speech bubbles and reduce animations.
 - **Custom Windows app icon** — chibi Wobbi.
+
+### New in 0.4.1 — Cozy Companion Update 🐾
+
+#### Auto-Snooze
+- Wobbi automatically falls asleep after five minutes
+  of computer inactivity.
+- Returning to the computer gently wakes him up.
+- A small welcome-back animation and speech bubble
+  make his return extra adorable.
+- Auto-Snooze preferences persist between sessions.
+
+#### Head Scritchies
+- Hover over Wobbi's forehead to reveal a custom
+  patting-hand cursor.
+- Quick clicks trigger happy bounces and floating hearts.
+- Click and hold for affectionate head scritchies.
+- Wobbi closes his eyes, smiles and gently sways.
+- Releasing gives him a tiny contented bounce.
+- Sleeping Wobbi enjoys pats without waking up.
+- His sleepy smile lingers briefly after being petted.
+- Custom hover, pressed and holding cursor artwork.
+- Supports Classic, Lavender and Reduced Animations.
+
+All interactions work locally without an AI request.
+
 
 > **Project status:** Wobbi is an experimental learning and portfolio project, not a finished desktop assistant or installer-based product. Build the source locally to run it.
 
@@ -93,6 +118,7 @@ Or open `Wobbi.slnx` in Visual Studio and run the Wobbi project.
 - **Right-click → Preferences:** toggle speech bubbles and reduced animations.
 - **Right-click → Quit:** exit the application.
 - **Chat window X:** hide chat without clearing the current conversation; reopening restores it while Wobbi is running.
+- **Hover and pat his forehead:** click for a happy pat, or hold for head scritchies.
 
 The Mini character currently uses its own lavender chibi artwork, independently of the selected full-size appearance.
 
