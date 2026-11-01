@@ -6,7 +6,7 @@
 
 ## 🎬 See Wobbi in action
 
-<img width="1536" height="1024" alt="Cosmic Wobbi Expressions Without Loops" src="https://github.com/user-attachments/assets/1ce21349-9d0f-4775-ac86-31293734040d" />
+<img width="1530" height="396" alt="image" src="https://github.com/user-attachments/assets/39389275-7c61-4968-8992-2effdde6ae8b" />
 
 https://github.com/user-attachments/assets/451d0fe6-1634-4472-aa87-2f6ba91d56d3
 
