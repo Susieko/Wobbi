@@ -6,6 +6,8 @@
 
 ## 🎬 See Wobbi in action
 
+<img width="1536" height="1024" alt="Cosmic Wobbi Expressions Without Loops" src="https://github.com/user-attachments/assets/1ce21349-9d0f-4775-ac86-31293734040d" />
+
 https://github.com/user-attachments/assets/451d0fe6-1634-4472-aa87-2f6ba91d56d3
 
 Wobbi is an animated, AI-powered Windows desktop buddy built with C#, .NET 10, WPF and Ollama. He keeps you company on your desktop, reacts to interactions, and chats through a locally running language model.
