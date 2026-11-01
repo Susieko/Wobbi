@@ -7,6 +7,7 @@
 ## 🎬 See Wobbi in action
 
 <img width="1530" height="396" alt="image" src="https://github.com/user-attachments/assets/39389275-7c61-4968-8992-2effdde6ae8b" />
+<img width="1536" height="1024" alt="Wobbi’s Patting Cursor Showcase" src="https://github.com/user-attachments/assets/290e5cab-5c0e-441d-a219-6bae999c3aef" />
 
 https://github.com/user-attachments/assets/451d0fe6-1634-4472-aa87-2f6ba91d56d3
 
