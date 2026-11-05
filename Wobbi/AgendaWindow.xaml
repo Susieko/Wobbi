@@ -1,0 +1,210 @@
+﻿<Window x:Class="Wobbi.AgendaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Wobbi"
+        Title="Wobbi Calendar 💜"
+        Width="1200"
+        Height="780"
+        MinWidth="850"
+        MinHeight="520"
+        WindowStartupLocation="CenterScreen"
+        Background="#15121F"
+        Foreground="#F8F5FF"
+        Topmost="False"
+        ShowInTaskbar="True"
+        ShowActivated="True">
+
+    <Window.Resources>
+
+        <!-- REUSABLE WOBBI BUTTON STYLE -->
+        <Style x:Key="WobbiButton"
+               TargetType="Button">
+
+            <Setter Property="Background"
+                    Value="#30283F"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="Padding"
+                    Value="12,8"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <!-- HOVER EFFECT -->
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+
+                                <Setter TargetName="Chrome"
+                                        Property="Opacity"
+                                        Value="0.85"/>
+                            </Trigger>
+
+                            <!-- DISABLED EFFECT -->
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+
+                                <Setter TargetName="Chrome"
+                                        Property="Opacity"
+                                        Value="0.35"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <!-- MAIN LAYOUT -->
+    <Grid Margin="24,20,24,18">
+
+        <Grid.RowDefinitions>
+            <!-- Title and New Event button -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- Week navigation and date picker -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- Weekly timeline fills remaining space -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Grid Grid.Row="0"
+              Margin="0,0,0,20">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+
+                <TextBlock Text="Wobbi Calendar 💜"
+                           FontSize="25"
+                           FontWeight="Bold"/>
+
+                <TextBlock Text="Your little personal planner"
+                           Foreground="#AAA0BF"
+                           FontSize="12"
+                           Margin="0,5,0,0"/>
+
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                    Content="+ New Event"
+                    Width="135"
+                    Height="38"
+                    Background="#9876DB"
+                    Style="{StaticResource WobbiButton}"
+                    Click="AddEventButton_Click"/>
+
+        </Grid>
+
+        <!-- WEEK NAVIGATION -->
+        <Grid Grid.Row="1"
+              Margin="0,0,0,14">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- PREVIOUS / THIS WEEK / NEXT -->
+            <StackPanel Grid.Column="0"
+                        Orientation="Horizontal">
+
+                <Button Content="❮"
+                        Width="38"
+                        Height="36"
+                        Style="{StaticResource WobbiButton}"
+                        Click="PreviousPeriod_Click"/>
+
+                <Button Content="This Week"
+                        Width="100"
+                        Height="36"
+                        Margin="7,0"
+                        Style="{StaticResource WobbiButton}"
+                        Click="Today_Click"/>
+
+                <Button Content="❯"
+                        Width="38"
+                        Height="36"
+                        Style="{StaticResource WobbiButton}"
+                        Click="NextPeriod_Click"/>
+
+            </StackPanel>
+
+            <!-- CURRENT WEEK RANGE -->
+            <TextBlock x:Name="PeriodTitle"
+                       Grid.Column="1"
+                       FontSize="17"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="12,0"/>
+
+            <!-- CUSTOM PURPLE MONTH PICKER -->
+            <Grid Grid.Column="2">
+
+                <Button x:Name="JumpDateButton"
+                        Content="Choose date ▾"
+                        Width="155"
+                        Height="36"
+                        Style="{StaticResource WobbiButton}"
+                        Click="JumpDateButton_Click"/>
+
+                <Popup x:Name="MonthPickerPopup"
+                       PlacementTarget="{Binding ElementName=JumpDateButton}"
+                       Placement="Bottom"
+                       HorizontalOffset="-145"
+                       VerticalOffset="8"
+                       AllowsTransparency="True"
+                       StaysOpen="False"
+                       PopupAnimation="Fade">
+
+                    <local:MonthPickerControl
+                        x:Name="MonthPicker"/>
+
+                </Popup>
+
+            </Grid>
+
+        </Grid>
+
+        <!-- FULL-WIDTH WEEKLY CALENDAR -->
+        <Border Grid.Row="2"
+                Background="#211B2E"
+                BorderBrush="#3B304D"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="10">
+
+            <local:WeekTimelineControl
+                x:Name="WeekTimeline"/>
+
+        </Border>
+
+    </Grid>
+</Window>

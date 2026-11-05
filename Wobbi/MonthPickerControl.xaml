@@ -1,0 +1,127 @@
+﻿<UserControl x:Class="Wobbi.MonthPickerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="300">
+
+    <UserControl.Resources>
+        <Style x:Key="PickerButtonStyle"
+               TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="Foreground"
+                    Value="#F8F5FF"/>
+            <Setter Property="BorderBrush"
+                    Value="Transparent"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="FocusVisualStyle"
+                    Value="{x:Null}"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Chrome"
+                                        Property="BorderBrush"
+                                        Value="#B997EF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="#241D33"
+            BorderBrush="#59486F"
+            BorderThickness="1"
+            CornerRadius="12"
+            Padding="14">
+
+        <StackPanel>
+
+            <!-- MONTH NAVIGATION -->
+            <Grid Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="36"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="36"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Content="❮"
+                        Height="32"
+                        Style="{StaticResource PickerButtonStyle}"
+                        Click="PreviousMonth_Click"/>
+
+                <TextBlock x:Name="MonthTitle"
+                           Grid.Column="1"
+                           Foreground="White"
+                           FontWeight="SemiBold"
+                           FontSize="15"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="2"
+                        Content="❯"
+                        Height="32"
+                        Style="{StaticResource PickerButtonStyle}"
+                        Click="NextMonth_Click"/>
+            </Grid>
+
+            <!-- WEEKDAYS -->
+            <UniformGrid Columns="7"
+                         Rows="1"
+                         Margin="0,0,0,7">
+
+                <TextBlock Text="Mo"/>
+                <TextBlock Text="Tu"/>
+                <TextBlock Text="We"/>
+                <TextBlock Text="Th"/>
+                <TextBlock Text="Fr"/>
+                <TextBlock Text="Sa"/>
+                <TextBlock Text="Su"/>
+
+                <UniformGrid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground"
+                                Value="#AA9BBB"/>
+                        <Setter Property="FontSize"
+                                Value="11"/>
+                        <Setter Property="TextAlignment"
+                                Value="Center"/>
+                    </Style>
+                </UniformGrid.Resources>
+            </UniformGrid>
+
+            <!-- DATE BUTTONS -->
+            <UniformGrid x:Name="DaysGrid"
+                         Columns="7"
+                         Rows="6"/>
+
+            <Border Height="1"
+                    Background="#40334F"
+                    Margin="0,12,0,10"/>
+
+            <Button Content="Go to today 💜"
+                    Height="34"
+                    Background="#38304D"
+                    Style="{StaticResource PickerButtonStyle}"
+                    Click="Today_Click"/>
+
+        </StackPanel>
+    </Border>
+</UserControl>

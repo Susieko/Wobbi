@@ -1,0 +1,181 @@
+﻿<Window x:Class="Wobbi.AddAgendaEventWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Wobbi"
+        Title="New Appointment 💜"
+        Width="470"
+        Height="590"
+        MinWidth="470"
+        MinHeight="590"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="#191526"
+        Foreground="#F8F5FF">
+
+    <Window.Resources>
+        <Style x:Key="RoundedButton"
+               TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome"
+                                        Property="Opacity"
+                                        Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Chrome"
+                                        Property="Opacity"
+                                        Value="0.7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="InputBoxStyle"
+               TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Background" Value="#38304D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,18">
+            <TextBlock Text="New Appointment 💜"
+                       FontSize="21"
+                       FontWeight="Bold"/>
+            <TextBlock Text="What should Wobbi remember?"
+                       Foreground="#B7AACD"
+                       FontSize="12"
+                       Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Form -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+
+                <TextBlock Text="Title"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,7"/>
+                <TextBox x:Name="TitleInput"
+                         Style="{StaticResource InputBoxStyle}"/>
+
+                <TextBlock Text="Description (optional)"
+                           FontWeight="SemiBold"
+                           Margin="0,18,0,7"/>
+                <TextBox x:Name="DescriptionInput"
+                         Height="76"
+                         Padding="10,9"
+                         Background="#38304D"
+                         Foreground="White"
+                         BorderThickness="0"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Auto"/>
+
+                <Grid Margin="0,18,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="18"/>
+                        <ColumnDefinition Width="120"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Date -->
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Date"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,7"/>
+
+                        <Grid>
+                            <Button x:Name="DateButton"
+                                    Content="Choose date ▾"
+                                    Height="36"
+                                    Background="#38304D"
+                                    Style="{StaticResource RoundedButton}"
+                                    Click="DateButton_Click"/>
+
+                            <Popup x:Name="DatePopup"
+                                   PlacementTarget="{Binding ElementName=DateButton}"
+                                   Placement="Bottom"
+                                   VerticalOffset="8"
+                                   AllowsTransparency="True"
+                                   StaysOpen="False"
+                                   PopupAnimation="Fade">
+
+                                <local:MonthPickerControl
+                                    x:Name="EventMonthPicker"/>
+
+                            </Popup>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Time -->
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Time (HH:mm)"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,7"/>
+                        <TextBox x:Name="TimeInput"
+                                 Style="{StaticResource InputBoxStyle}"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="Duration (min)"
+                           FontWeight="SemiBold"
+                           Margin="0,18,0,7"/>
+                <TextBox x:Name="DurationInput"
+                         Width="120"
+                         HorizontalAlignment="Left"
+                         Style="{StaticResource InputBoxStyle}"/>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Actions -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,18,0,0">
+
+            <Button Content="Cancel"
+                    Width="95"
+                    Margin="0,0,10,0"
+                    Background="#30283F"
+                    Style="{StaticResource RoundedButton}"
+                    IsCancel="True"/>
+
+            <Button Content="Save appointment 💜"
+                    Width="175"
+                    Background="#9876DB"
+                    Style="{StaticResource RoundedButton}"
+                    Click="Save_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

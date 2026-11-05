@@ -12,15 +12,20 @@ using Wobbi.Animations;
 using System.Windows.Media.Imaging;
 namespace Wobbi;
 using System.IO;
+using Wobbi.Models;
+
+
 public partial class MainWindow : Window
 {
-
+    private ReminderCenterWindow? _reminderCenter;
+    private ReminderToastWindow? _reminderToast;
     private readonly DispatcherTimer _blinkTimer = new();
     private readonly Random _random = new();
     private readonly TranslateTransform _floating = new();
     private readonly TranslateTransform _petBounce = new();
     private readonly RotateTransform _curiousTilt = new();
     private readonly DispatcherTimer _miniGlanceTimer = new();
+    private readonly AgendaService _agendaService = new();
     private bool _miniLookingAround = false;
     private readonly DispatcherTimer _miniClickTimer = new()
     {
@@ -35,6 +40,12 @@ public partial class MainWindow : Window
 
     private readonly DispatcherTimer _miniBlinkTimer = new();
     private bool _miniBlinking = false;
+
+
+    private readonly DispatcherTimer _miniAgendaPopupTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(8)
+    };
 
 
     private readonly DispatcherTimer _autoSnoozeTimer = new()
@@ -52,6 +63,7 @@ public partial class MainWindow : Window
     private bool _isAutoSnoozing = false;
 
     private bool _autoSnoozeEnabled = true;
+    private AgendaReminderService? _agendaReminders;
 
 
     private readonly DispatcherTimer _miniWakeBubbleTimer = new()
@@ -258,11 +270,29 @@ public partial class MainWindow : Window
     {
         Interval = TimeSpan.FromMilliseconds(350)
     };
-
+    private AgendaWindow? _agendaWindow;
 
     public MainWindow()
     {
         InitializeComponent();
+
+
+        _miniAgendaPopupTimer.Tick += (_, _) =>
+        {
+            _miniAgendaPopupTimer.Stop();
+            MiniAgendaPopup.IsOpen = false;
+        };
+
+        Closed += (_, _) => _miniAgendaPopupTimer.Stop();
+
+        _agendaReminders = new AgendaReminderService(
+            _agendaService,
+            ShowAgendaReminder);
+
+        Loaded += (_, _) => _agendaReminders.Start();
+
+        Closed += (_, _) => _agendaReminders.Stop();
+
 
 
         // Wobbi v0.4.1 — Custom patting cursor
@@ -411,6 +441,58 @@ public partial class MainWindow : Window
         _personality = _appearanceSettings.LoadPersonality();
         ApplyPersonalityMenu();
         ApplyPreferencesMenu();
+    }
+
+
+private void RefreshReminderBadge()
+    {
+        MiniAgendaBadge.Visibility =
+            _agendaService.HasPendingReminders()
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+    }
+
+    private void OpenReminders_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        ShowReminderCenter();
+    }
+
+    private void ShowReminderCenter()
+    {
+        if (_reminderCenter != null)
+        {
+            _reminderCenter.Refresh();
+
+            if (_reminderCenter.WindowState ==
+                WindowState.Minimized)
+            {
+                _reminderCenter.WindowState =
+                    WindowState.Normal;
+            }
+
+            _reminderCenter.Activate();
+            return;
+        }
+
+        var window = new ReminderCenterWindow(
+            _agendaService);
+
+        _reminderCenter = window;
+
+        window.RemindersChanged += (_, _) =>
+        {
+            RefreshReminderBadge();
+        };
+
+        window.Closed += (_, _) =>
+        {
+            _reminderCenter = null;
+        };
+
+        window.Show();
+        window.Activate();
     }
 
 
@@ -1488,6 +1570,32 @@ public partial class MainWindow : Window
             ApplyMiniMode();
         }
 
+        // Restore unread agenda notifications after restart.
+        MiniAgendaBadge.Visibility =
+            _agendaService.HasPendingReminders()
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+
+        // Restore the unread badge.
+        RefreshReminderBadge();
+
+
+        if (_agendaService.RecoveredFromBackup)
+        {
+            MessageBox.Show(
+                this,
+                "Wobbi noticed your agenda file was damaged! 💜\n\n" +
+                "I've restored the previous saved version.\n\n" +
+                "The backup may be one save older, so please " +
+                "check your appointments.\n\n" +
+                "The damaged original has been preserved.",
+                "Wobbi Agenda Recovery",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+
+
     }
 
     private void MiniClickTimer_Tick(
@@ -1661,5 +1769,88 @@ public partial class MainWindow : Window
     }
 
 
+
+    private void OpenAgenda_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        // Opening Agenda does NOT dismiss reminders.
+        RefreshReminderBadge();
+
+        // Focus the existing Agenda window.
+        if (_agendaWindow != null)
+        {
+            if (_agendaWindow.WindowState ==
+                WindowState.Minimized)
+            {
+                _agendaWindow.WindowState =
+                    WindowState.Normal;
+            }
+
+            _agendaWindow.Activate();
+            return;
+        }
+
+        // Otherwise, create the Agenda window.
+
+        var agenda = new AgendaWindow(_agendaService)
+        {
+            Topmost = false,
+            ShowInTaskbar = true
+        };
+
+        _agendaWindow = agenda;
+
+        agenda.Closed += (_, _) =>
+        {
+            _agendaWindow = null;
+        };
+
+        // Open independently from Wobbi's always-on-top window.
+        agenda.Show();
+        agenda.Activate();
+
+    }
+
+
+
+    private void ShowAgendaReminder(AgendaEvent agendaEvent)
+    {
+        var localTime = agendaEvent.StartsAt.ToLocalTime();
+
+        string message =
+            $"Pssst! 💜 {agendaEvent.Title} " +
+            $"at {localTime:HH:mm}! " +
+            "Don't forget, habibs! 🐣";
+
+        // Keep the persistent reminder badge updated.
+        RefreshReminderBadge();
+
+        // Refresh the Reminder Center if already open.
+        // Do not activate or open it automatically.
+        _reminderCenter?.Refresh();
+
+        // Close an older toast if one is still visible.
+        _reminderToast?.Close();
+
+        // Show a small, non-activating notification.
+        var toast = new ReminderToastWindow(agendaEvent);
+
+        _reminderToast = toast;
+
+        toast.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_reminderToast, toast))
+                _reminderToast = null;
+        };
+
+        toast.Show();
+
+        // Preserve Wobbi's existing speech bubble setting.
+        if (!_isMiniMode && _showSpeechBubbles)
+        {
+            ShowSpeechBubble(message);
+        }
+    }
 
 }
