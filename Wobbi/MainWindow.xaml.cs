@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 namespace Wobbi;
 using System.IO;
 using Wobbi.Models;
+using Wobbi.Services;
+using System.Diagnostics;
 
 
 public partial class MainWindow : Window
@@ -20,6 +22,12 @@ public partial class MainWindow : Window
     private ReminderCenterWindow? _reminderCenter;
     private ReminderToastWindow? _reminderToast;
     private readonly DispatcherTimer _blinkTimer = new();
+
+    private readonly DispatcherTimer _dotaStatusTimer = new()
+    {
+        Interval = TimeSpan.FromSeconds(2)
+    };
+
     private readonly Random _random = new();
     private readonly TranslateTransform _floating = new();
     private readonly TranslateTransform _petBounce = new();
@@ -27,6 +35,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _miniGlanceTimer = new();
     private readonly AgendaService _agendaService = new();
     private bool _miniLookingAround = false;
+    private readonly DotaGsiService _dotaGsi = new();
     private readonly DispatcherTimer _miniClickTimer = new()
     {
         Interval = TimeSpan.FromMilliseconds(550)
@@ -214,6 +223,23 @@ public partial class MainWindow : Window
     }
 
 
+    private void UpdateDotaStatusMenu()
+    {
+        DotaConnectionStatus status =
+            _dotaGsi.GetConnectionStatus();
+
+        DotaStatusMenuItem.Header = status switch
+        {
+            DotaConnectionStatus.InMatch =>
+                "🟢 Dota: In match",
+
+            DotaConnectionStatus.Connected =>
+                "🔵 Dota: Connected",
+
+            _ => "⚪ Dota: Waiting for game data"
+        };
+    }
+
     private void HeadPatZone_LostMouseCapture(
         object sender,
         MouseEventArgs e)
@@ -276,6 +302,129 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+
+#if DEBUG
+        DotaPreviewMenuItem.Visibility = Visibility.Visible;
+#endif
+
+
+        // Update the Dota status without opening
+        // any additional windows.
+        _dotaStatusTimer.Tick += (_, _) =>
+        {
+            UpdateDotaStatusMenu();
+        };
+
+
+
+        // Dota 2 GSI connection diagnostics.
+        _dotaGsi.StatusChanged += message =>
+        {
+            Debug.WriteLine($"[WOBBI DOTA] {message}");
+        };
+
+
+
+
+        _dotaGsi.ReactionRequested += message =>
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                Debug.WriteLine(
+                    $"[WOBBI REACTION] {message}");
+
+                // Diagnose why the bubble might be hidden.
+                Debug.WriteLine(
+                    $"[WOBBI BUBBLE] " +
+                    $"MiniMode={_isMiniMode}, " +
+                    $"SpeechEnabled={_showSpeechBubbles}, " +
+                    $"WindowVisible={IsVisible}, " +
+                    $"MiniViewVisible={MiniView.IsVisible}, " +
+                    $"WindowState={WindowState}");
+
+                if (!_showSpeechBubbles || !IsVisible)
+                {
+                    Debug.WriteLine(
+                        "[WOBBI BUBBLE] Suppressed by settings " +
+                        "or window visibility.");
+
+                    return;
+                }
+
+                if (_isMiniMode)
+                {
+                    ShowMiniSpeechBubble(message);
+
+                    Debug.WriteLine(
+                        "[WOBBI BUBBLE] Mini popup open: " +
+                        MiniWakePopup.IsOpen);
+                }
+                else
+                {
+                    ShowSpeechBubble(message);
+
+                    Debug.WriteLine(
+                        "[WOBBI BUBBLE] Full Mode bubble requested.");
+                }
+            }));
+        };
+
+
+        _dotaGsi.GameplayReactionRequested += gameEvent =>
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                // Pick a line using the currently
+                // selected Wobbi personality.
+                string message = GetDotaReaction(gameEvent);
+
+                Debug.WriteLine(
+                    $"[WOBBI {gameEvent}] " +
+                    $"Personality={_personality}: {message}");
+
+                if (!_showSpeechBubbles || !IsVisible)
+                    return;
+
+                if (_isMiniMode)
+                {
+                    ShowMiniSpeechBubble(message);
+                }
+                else
+                {
+                    ShowSpeechBubble(message);
+                }
+            }));
+        };
+
+
+
+        // Start listening when Wobbi opens.
+
+        Loaded += (_, _) =>
+        {
+            // Restore the saved commentary preference.
+            _dotaGsi.ReactionCooldownSeconds =
+                _appearanceSettings
+                    .LoadDotaReactionCooldownSeconds();
+
+            ApplyDotaCommentaryMenu();
+
+            // Start our existing GSI listener.
+            _dotaGsi.Start();
+
+            UpdateDotaStatusMenu();
+            _dotaStatusTimer.Start();
+
+        };
+
+
+
+        // Stop listening when Wobbi closes.
+        Closed += (_, _) =>
+        {
+            _dotaStatusTimer.Stop();
+            _dotaGsi.Dispose();
+        };
 
         _miniAgendaPopupTimer.Tick += (_, _) =>
         {
@@ -410,12 +559,12 @@ public partial class MainWindow : Window
 
                     if (_isMiniMode)
                     {
+
                         if (_showSpeechBubbles)
                         {
-                            _miniWakeBubbleTimer.Stop();
-                            MiniWakePopup.IsOpen = true;
-                            _miniWakeBubbleTimer.Start();
+                            ShowMiniSpeechBubble("Oh! You're back! 💜");
                         }
+
                     }
                     else
                     {
@@ -442,6 +591,255 @@ public partial class MainWindow : Window
         ApplyPersonalityMenu();
         ApplyPreferencesMenu();
     }
+
+    private void DotaQuiet_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        SetDotaReactionCooldown(30);
+    }
+
+    private void DotaPreviewVictory_Click(
+        object sender, RoutedEventArgs e)
+    {
+        PreviewDotaReaction(DotaGameplayEvent.Victory);
+    }
+
+    private void DotaPreviewDefeat_Click(
+        object sender, RoutedEventArgs e)
+    {
+        PreviewDotaReaction(DotaGameplayEvent.Defeat);
+    }
+
+    private void DotaPreviewKillStreak_Click(
+        object sender, RoutedEventArgs e)
+    {
+        PreviewDotaReaction(DotaGameplayEvent.KillStreak);
+    }
+
+    private void DotaPreviewDeathStreak_Click(
+        object sender, RoutedEventArgs e)
+    {
+        PreviewDotaReaction(DotaGameplayEvent.DeathStreak);
+    }
+
+    // Display a test reaction without changing game state.
+    private void PreviewDotaReaction(
+        DotaGameplayEvent gameEvent)
+    {
+        if (!_showSpeechBubbles || !IsVisible)
+            return;
+
+        string message = GetDotaReaction(gameEvent);
+
+        if (_isMiniMode)
+        {
+            ShowMiniSpeechBubble(message);
+        }
+        else
+        {
+            ShowSpeechBubble(message);
+        }
+    }
+
+    private void DotaNormal_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        SetDotaReactionCooldown(10);
+    }
+
+    private void DotaChatty_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        SetDotaReactionCooldown(5);
+    }
+
+    private void SetDotaReactionCooldown(int seconds)
+    {
+        _dotaGsi.ReactionCooldownSeconds = seconds;
+
+        _appearanceSettings
+            .SaveDotaReactionCooldownSeconds(seconds);
+
+        ApplyDotaCommentaryMenu();
+
+        Debug.WriteLine(
+            $"[WOBBI DOTA] Commentary cooldown: {seconds}s");
+    }
+
+    private void ApplyDotaCommentaryMenu()
+    {
+        int seconds = _dotaGsi.ReactionCooldownSeconds;
+
+        DotaQuietMenuItem.IsChecked = seconds == 30;
+        DotaNormalMenuItem.IsChecked = seconds == 10;
+        DotaChattyMenuItem.IsChecked = seconds == 5;
+    }
+
+
+    private string GetDotaReaction(
+    DotaGameplayEvent gameEvent)
+    {
+        string[] lines = (_personality, gameEvent) switch
+        {
+            // CALM
+            (WobbiPersonality.Calm, DotaGameplayEvent.Kill) =>
+            [
+                "Nicely done. Keep up the good work! 💜",
+            "Good pickoff. Stay focused on the next objective.",
+            "Well played. That was a clean fight!"
+            ],
+
+            (WobbiPersonality.Calm, DotaGameplayEvent.Death) =>
+            [
+                "It's okay. Let's focus on the next fight. 💜",
+            "Unfortunate. We can recover from this.",
+            "Take your time. The next fight will go better."
+            ],
+
+            // BALANCED
+            (WobbiPersonality.Balanced, DotaGameplayEvent.Kill) =>
+            [
+                "OKAY HABIBS!! I SAW THAT! 💜",
+            "That was actually pretty clean!",
+            "Someone's making plays today! 👀"
+            ],
+
+            (WobbiPersonality.Balanced, DotaGameplayEvent.Death) =>
+            [
+                "Habibs, that was a questionable decision. 😭",
+            "A minor tactical donation. We recover!",
+            "Oof. Let's pretend nobody saw that. 💜"
+            ],
+
+            // PLAYFUL
+            (WobbiPersonality.Playful, DotaGameplayEvent.Kill) =>
+            [
+                "WAIT, YOU ACTUALLY KILLED SOMEONE?! 💜",
+            "Someone check the replay, that was suspiciously good!",
+            "LOOK AT YOU!! I'M ALMOST IMPRESSED. 😭"
+            ],
+
+            (WobbiPersonality.Playful, DotaGameplayEvent.Death) =>
+            [
+                "YOU'RE NOT SUPPOSED TO BE THEIR SIXTH PLAYER! 💀",
+            "Habibs, the enemy carry thanks you for the donation.",
+            "They're going to name an item after your feeding. 😭"
+            ],
+
+
+            // CALM — THREE DEATHS
+            (WobbiPersonality.Calm, DotaGameplayEvent.DeathStreak) =>
+            [
+                "A rough stretch. Let's regroup and play safer. 💜",
+    "Three deaths. Don't worry, we can recover!",
+    "Maybe take a moment to reassess the next fight."
+            ],
+
+            // BALANCED — THREE DEATHS
+            (WobbiPersonality.Balanced, DotaGameplayEvent.DeathStreak) =>
+            [
+                "Habibs, that's three deaths. New strategy? 😭",
+    "Okay, we might need to stop donating kills.",
+    "Three deaths without a kill? We can do better! 💜"
+            ],
+
+            // PLAYFUL — THREE DEATHS
+            (WobbiPersonality.Playful, DotaGameplayEvent.DeathStreak) =>
+            [
+                "THREE DEATHS?! ARE WE FUNDING THEIR RETIREMENT?! 💀",
+    "HABIBS. THE ENEMY TEAM IS SENDING YOU A THANK-YOU CARD.",
+    "At this point, their carry should put you on payroll. 😭"
+            ],
+
+            // CALM — THREE KILLS
+            (WobbiPersonality.Calm,
+             DotaGameplayEvent.KillStreak) =>
+            [
+                "Three kills without dying. Excellent work! 💜",
+    "You're doing great. Keep that momentum going!",
+    "A very strong performance. Well played!"
+            ],
+
+            // BALANCED — THREE KILLS
+            (WobbiPersonality.Balanced,
+             DotaGameplayEvent.KillStreak) =>
+            [
+                "THREE KILLS?! Habibs, you're actually carrying! 💜",
+    "OKAYYY! Someone's having a good game!",
+    "Three kills and still alive? I'M IMPRESSED! 👀"
+            ],
+
+            // PLAYFUL — THREE KILLS
+            (WobbiPersonality.Playful,
+             DotaGameplayEvent.KillStreak) =>
+            [
+                "WHO ARE YOU AND WHAT DID YOU DO WITH MY HABIBS?! 💀",
+    "THREE KILLS?! DID YOU SECRETLY HIRE A BOOSTER?!",
+    "WAIT. YOU'RE THE ONE FARMING THEM NOW?! 😭💜"
+            ],
+
+
+            // CALM - VICTORY
+            (WobbiPersonality.Calm, DotaGameplayEvent.Victory) =>
+            [
+                "Wonderful game. You earned that victory! 💜",
+    "Well played! Enjoy your win.",
+    "That was a lovely performance. I'm proud of you!"
+            ],
+
+            // BALANCED - VICTORY
+            (WobbiPersonality.Balanced, DotaGameplayEvent.Victory) =>
+            [
+                "HABIBS WE WON!! LET'S GOOO! 💜",
+    "THAT'S MY PLAYER!! GOOD GAME!",
+    "Victory secured! See? We can actually do this!"
+            ],
+
+            // PLAYFUL - VICTORY
+            (WobbiPersonality.Playful, DotaGameplayEvent.Victory) =>
+            [
+                "WE WON?! SOMEONE CHECK IF THIS IS REAL! 💀",
+    "HABIBS YOU CARRIED! I'M ACTUALLY SPEECHLESS!",
+    "I NEVER DOUBTED YOU! Okay, maybe a little. 💜"
+            ],
+
+            // CALM - DEFEAT
+            (WobbiPersonality.Calm, DotaGameplayEvent.Defeat) =>
+            [
+                "Not our game. We'll get them next time. 💜",
+    "A difficult match, but there's always something to learn.",
+    "It's okay. Let's rest and regroup."
+            ],
+
+            // BALANCED - DEFEAT
+            (WobbiPersonality.Balanced, DotaGameplayEvent.Defeat) =>
+            [
+                "Oof. That was rough, habibs. 😭",
+    "Well, we tried! Next game will be better.",
+    "A strategic setback. We go again! 💜"
+            ],
+
+            // PLAYFUL - DEFEAT
+            (WobbiPersonality.Playful, DotaGameplayEvent.Defeat) =>
+            [
+                "WELL... AT LEAST THE ENEMY TEAM HAD FUN. 💀",
+    "Habibs, can we pretend this game never happened?",
+    "That match belongs in the recycling bin. 😭"
+            ],
+
+
+            // Fallback
+            _ => ["You got this, habibs! 💜"]
+        };
+
+        return lines[_random.Next(lines.Length)];
+    }
+
+
+    
 
 
 private void RefreshReminderBadge()
@@ -1238,6 +1636,34 @@ private void RefreshReminderBadge()
             animation
         );
     }
+
+
+    private void ShowMiniSpeechBubble(string message)
+    {
+        if (!_isMiniMode ||
+            !_showSpeechBubbles ||
+            !IsVisible)
+        {
+            return;
+        }
+
+        // Keep the bubble small enough for Mini Mode.
+        const int maxLength = 75;
+
+        string preview = message.Length > maxLength
+            ? message[..72].TrimEnd() + "..."
+            : message;
+
+        // Reuse our existing Mini Mode popup and timer.
+        _miniWakeBubbleTimer.Stop();
+        MiniWakePopup.IsOpen = false;
+
+        MiniWakePopupText.Text = preview;
+
+        MiniWakePopup.IsOpen = true;
+        _miniWakeBubbleTimer.Start();
+    }
+
 
     private void ClassicAppearance_Click(object sender, RoutedEventArgs e)
     => SetAppearance(WobbiAppearance.Classic);

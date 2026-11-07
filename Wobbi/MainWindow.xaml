@@ -64,6 +64,55 @@ Height="260"
 
                 <Separator/>
 
+                <!-- DOTA COMPANION STATUS -->
+                <MenuItem x:Name="DotaStatusMenuItem"
+          Header="🎮 Dota: Waiting for game data"
+          IsEnabled="False"/>
+
+                <Separator/>
+
+                <!-- DEBUG-ONLY DOTA REACTION PREVIEW -->
+                <MenuItem x:Name="DotaPreviewMenuItem"
+          Header="🧪 Test Dota reactions"
+          Visibility="Collapsed">
+
+                    <MenuItem Header="🏆 Preview Victory"
+              Click="DotaPreviewVictory_Click"/>
+
+                    <MenuItem Header="💀 Preview Defeat"
+              Click="DotaPreviewDefeat_Click"/>
+
+                    <Separator/>
+
+                    <MenuItem Header="🔥 Preview Kill Streak"
+              Click="DotaPreviewKillStreak_Click"/>
+
+                    <MenuItem Header="😭 Preview Death Streak"
+              Click="DotaPreviewDeathStreak_Click"/>
+
+                </MenuItem>
+
+
+                <MenuItem Header="Dota commentary">
+
+                    <MenuItem x:Name="DotaQuietMenuItem"
+              Header="Quiet (30 seconds)"
+              IsCheckable="True"
+              Click="DotaQuiet_Click"/>
+
+                    <MenuItem x:Name="DotaNormalMenuItem"
+              Header="Normal (10 seconds)"
+              IsCheckable="True"
+              Click="DotaNormal_Click"/>
+
+                    <MenuItem x:Name="DotaChattyMenuItem"
+              Header="Chatty (5 seconds)"
+              IsCheckable="True"
+              Click="DotaChatty_Click"/>
+
+                </MenuItem>
+
+
                 <MenuItem Header="Preferences">
                     <MenuItem x:Name="ShowSpeechBubblesMenuItem"
               Header="Show speech bubbles"
@@ -420,10 +469,16 @@ Height="260"
                 CornerRadius="14"
                 Padding="12,8">
 
-                        <TextBlock Text="Oh! You're back! 💜"
-                       FontSize="12"
-                       FontWeight="SemiBold"
-                       Foreground="#30254A"/>
+
+                        <TextBlock x:Name="MiniWakePopupText"
+           Text="Oh! You're back! 💜"
+           FontSize="12"
+           FontWeight="SemiBold"
+           Foreground="#30254A"
+           MaxWidth="210"
+           TextWrapping="Wrap"
+           TextAlignment="Center"/>
+
                     </Border>
 
                     <!-- Tiny speech bubble tail -->

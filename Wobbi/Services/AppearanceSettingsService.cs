@@ -14,6 +14,7 @@ public sealed class AppearanceSettingsService
 
     private sealed class SettingsData
     {
+        public int DotaReactionCooldownSeconds { get; set; } = 10;
         public string Appearance { get; set; } = nameof(WobbiAppearance.Classic);
         public string Personality { get; set; } = nameof(WobbiPersonality.Calm);
         public bool ShowSpeechBubbles { get; set; } = true;
@@ -23,6 +24,30 @@ public sealed class AppearanceSettingsService
         public bool AutoSnooze { get; set; } = true;
 
 
+    }
+
+
+    public int LoadDotaReactionCooldownSeconds()
+    {
+        int seconds =
+            ReadSettings().DotaReactionCooldownSeconds;
+
+        return seconds is 5 or 10 or 30
+            ? seconds
+            : 10;
+    }
+
+    public void SaveDotaReactionCooldownSeconds(
+        int seconds)
+    {
+        if (seconds is not (5 or 10 or 30))
+            throw new ArgumentOutOfRangeException(nameof(seconds));
+
+        SettingsData settings = ReadSettings();
+
+        settings.DotaReactionCooldownSeconds = seconds;
+
+        WriteSettings(settings);
     }
 
     private static SettingsData ReadSettings()

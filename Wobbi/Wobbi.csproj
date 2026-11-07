@@ -7,7 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<ApplicationIcon>Assets\Wobbi.ico</ApplicationIcon>
-	  <Version>0.4.1</Version>
+	  
+<Version>0.5.0</Version>
+
   </PropertyGroup>
 
 
@@ -30,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Dota2GSI" Version="2.1.1.8897" />
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.6" />
   </ItemGroup>
 
