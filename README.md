@@ -12,16 +12,20 @@ No paid AI subscription or cloud API key is required for local conversations.
 👩‍💻 Looking at Wobbi as a C#/.NET portfolio project?
 Read the [**Developer Case Study →**](Wobbi/README.md) for the architecture, engineering decisions, code walkthroughs, and implementation details.
 
+
 🎬 See Wobbi in action
 
 <img width="1530" height="396" alt="image" src="https://github.com/user-attachments/assets/39389275-7c61-4968-8992-2effdde6ae8b" />
 <img width="1536" height="1024" alt="Wobbi’s Patting Cursor Showcase" src="https://github.com/user-attachments/assets/290e5cab-5c0e-441d-a219-6bae999c3aef" />
+
+https://github.com/user-attachments/assets/2a2198d8-2c87-498e-8c6e-122e8a3e20ac
 
 https://github.com/user-attachments/assets/451d0fe6-1634-4472-aa87-2f6ba91d56d3
 
 Wobbi is an animated, AI-powered Windows desktop buddy built with C#, .NET 10, WPF and Ollama. He keeps you company on your desktop, reacts to interactions, and chats through a locally running language model.
 
 No paid AI subscription or cloud API key is required.
+
 
 ✨ What can Wobbi do?
 
@@ -60,6 +64,7 @@ No paid AI subscription or cloud API key is required.
 
 🧪 Release-candidate note: The Dota integration is implemented but live match-result, reconnect, and combined regression testing are still in progress. Dota 2 GSI must be configured separately. Post-match AI analysis is not part of v0.5.
 
+
 🛠 Built with
 
 Technology	                         What it does
@@ -73,6 +78,7 @@ HttpClient + System.Text.Json	       Local AI requests and structured responses
 Dota2GSI	                           Optional game-state integration
 
 Curious how these pieces fit together? Explore the [technical case study](Wobbi/README.md).
+
 
 🚀 Run Wobbi from source
 
@@ -98,6 +104,7 @@ dotnet run --project Wobbi/Wobbi.csproj
 Or open Wobbi.slnx in Visual Studio and start the Wobbi project.
 💡 Wobbi's character animations, agenda, and other non-AI features do not require an Ollama reply. Local AI conversations require Ollama and the downloaded model to be available.
 
+
 🖱️ A few ways to interact
 
 Action                                           Result
@@ -113,6 +120,7 @@ Right-click → Appearance / Personality	         Change Wobbi's look or behavio
 Right-click → Preferences	                       Adjust speech bubbles and animation preferences
 Right-click → Quit	                             Close Wobbi
 
+
 🔒 Privacy & local data
 
 Wobbi's AI chat sends requests to your local Ollama server at http://127.0.0.1:11434/. The default setup does not send prompts to a paid cloud AI provider.
@@ -123,6 +131,7 @@ Wobbi's AI chat sends requests to your local Ollama server at http://127.0.0.1:1
 - Dota companion: uses GSI event data; it does not read Dota process memory, inject code, modify the client, automate gameplay, or access hidden information.
 - Initial setup: downloading Ollama and the model requires internet access; local AI inference does not require a cloud AI subscription.
 
+
 🪐 Project status & roadmap
 
 v0.5 is a release candidate and a learning/portfolio project, not a finished commercial assistant. The core companion, local AI chat, Mini Mode, agenda, and initial Dota GSI integration are implemented; some Dota edge cases and combined tests remain open.
@@ -131,11 +140,13 @@ Ideas for future releases include saved notes and memory, additional productivit
 
 See the [changelog](CHANGELOG.md) for version-by-version details and known limitations.
 
+
 👩‍💻 For developers & recruiters
 
 Wobbi is also a hands-on exploration of C#/.NET desktop development: WPF animation, event-driven UI behavior, local HTTP/JSON communication, settings persistence, scheduled reminders, and API-style integrations.
 
 ➡️ [Read Wobbi's C#/.NET Developer Case Study](Wobbi/README.md)
+
 
 💜 About
 
