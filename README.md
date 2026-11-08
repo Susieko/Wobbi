@@ -1,10 +1,18 @@
-# 🌌 Wobbi
+🌌 Wobbi
 
-**A tiny cosmic desktop companion with a surprisingly big personality.**
+A tiny cosmic desktop companion with a surprisingly big personality. 💜
 
-**Current version: 0.5.0 — Agenda & Dota Companion (Release Candidate)**
+Current version: v0.5.0 — Agenda & Dota Companion (Release Candidate)
+Built with: C# · .NET 10 · WPF / XAML · Ollama
 
-## 🎬 See Wobbi in action
+Wobbi is an animated, AI-powered Windows desktop companion who floats around your screen, reacts to affection, falls asleep when things get quiet, and chats using a locally running language model. Beyond being a tiny desktop pet, Wobbi also has a personal agenda, reminders, and an experimental Dota 2 companion.
+
+No paid AI subscription or cloud API key is required for local conversations.
+
+👩‍💻 Looking at Wobbi as a C#/.NET portfolio project?
+Read the [**Developer Case Study →**](Wobbi/README.md) for the architecture, engineering decisions, code walkthroughs, and implementation details.
+
+🎬 See Wobbi in action
 
 <img width="1530" height="396" alt="image" src="https://github.com/user-attachments/assets/39389275-7c61-4968-8992-2effdde6ae8b" />
 <img width="1536" height="1024" alt="Wobbi’s Patting Cursor Showcase" src="https://github.com/user-attachments/assets/290e5cab-5c0e-441d-a219-6bae999c3aef" />
@@ -15,115 +23,122 @@ Wobbi is an animated, AI-powered Windows desktop buddy built with C#, .NET 10, W
 
 No paid AI subscription or cloud API key is required.
 
-## ✨ Features
+✨ What can Wobbi do?
 
+💜 An expressive desktop buddy
 
-### New in 0.5 — Agenda & Dota Companion 💜
+- A character that feels alive: floating, breathing, blinking, curious glances, sleepy expressions, and animated reactions.
+- Petting and scritching: pat Wobbi's head or hold for a longer scritch, with custom cursor feedback.
+- Full Mode & Mini Mode: switch between the full companion and a compact chibi version with a double-click.
+- Personalities: Calm, Balanced, or Playful, affecting dialogue and reactions.
+- Custom looks: Classic, Lavender, and Cosmic appearance options for the full character.
+- Comfort settings: speech bubbles, reduced animations, and automatic snoozing when the computer is idle.
 
-#### 📅 Personal Agenda
-- Weekly calendar with event creation, editing and deletion.
-- Custom month navigation and event details.
+🤖 Private, locally powered AI conversations
+
+- Chat through Ollama using the qwen3:4b-instruct model.
+- Wobbi can react with a matching mood, such as happy, excited, or curious.
+- Recent conversational context is kept during the current app session.
+- Conversations can run locally once Ollama and the model have been downloaded.
+- Close and reopen the chat window without losing the current session's conversation.
+
+📅 Agenda & reminders — new in v0.5
+
+- A weekly agenda with event creation, editing, and deletion.
+- A calendar view with date navigation and event details.
 - Reminders before appointments and at event start.
-- Persistent reminder notifications.
-- Integration with Mini Mode's notification badge.
+- Reminder notifications that remain pending until dismissed.
+- Locally saved agenda events and a notification indicator integrated with Mini Mode.
 
-#### 🎮 Dota 2 Companion
-- Live match tracking through official Dota 2 GSI.
-- Kill and death reactions.
-- Special reactions for kill and death streaks.
-- Victory and defeat commentary.
-- Personality-specific dialogue.
-- Quiet, Normal and Chatty commentary settings.
-- Dota connection status indicator.
-- Match ID tracking and reconnect safeguards.
-- Debug-only reaction previews.
+🎮 Dota 2 companion — new in v0.5, still being verified
 
-**Note:** GSI requires separate configuration in Dota 2.
-Live match-result and reconnect edge cases are still
-undergoing final verification.
+- Tracks match states through Dota 2 Game State Integration (GSI).
+- Detects reported kills, deaths, and streak milestones.
+- Reacts with personality-based commentary, with Quiet / Normal / Chatty frequency settings.
+- Includes match-state tracking and a Dota connection status indicator.
+- Runs as a separate desktop window, not a game overlay.
 
-All interactions work locally without an AI request.
+🧪 Release-candidate note: The Dota integration is implemented but live match-result, reconnect, and combined regression testing are still in progress. Dota 2 GSI must be configured separately. Post-match AI analysis is not part of v0.5.
 
+🛠 Built with
 
-> **Project status:** Wobbi is an experimental learning and portfolio project, not a finished desktop assistant or installer-based product. Build the source locally to run it.
+Technology	                         What it does
 
-## 🛠 Tech stack
+C# / .NET 10	                       Core desktop application logic
+WPF / XAML	                         Windows interface, interaction, and animation
+SharpVectors.Wpf	                   SVG artwork rendering
+Ollama                               Local AI runtime
+Qwen3 4B Instruct	                   Locally running conversation model
+HttpClient + System.Text.Json	       Local AI requests and structured responses
+Dota2GSI	                           Optional game-state integration
 
-| Technology | Role |
-| --- | --- |
-| C# / .NET 10 | Application logic |
-| WPF / XAML | Windows UI and animation |
-| SharpVectors.Wpf | SVG character art |
-| Ollama | Local AI runtime |
-| Qwen3 4B Instruct | Local language model (`qwen3:4b-instruct`) |
-| HttpClient / JSON | AI requests and structured mood replies |
+Curious how these pieces fit together? Explore the [technical case study](Wobbi/README.md).
 
-## 🚀 Getting started
+🚀 Run Wobbi from source
 
-### Prerequisites
+Wobbi is currently a source-build project, not an installer-based application.
 
-- Windows with support for .NET 10 desktop apps
-- .NET 10 SDK and, optionally, Visual Studio with the **.NET desktop development** workload
-- [Ollama](https://ollama.com/download/windows)
-- Enough memory and processing capacity to run the selected local AI model
+Requirements
 
-### 1. Install the model
+- Windows with support for .NET 10 desktop applications.
+- .NET 10 SDK, or Visual Studio with the .NET desktop development workload.
+- Ollama for Windows.
+- Enough system resources to run a local language model.
 
-Open PowerShell:
-
-```powershell
+1. Download the AI model
+In PowerShell:
 ollama pull qwen3:4b-instruct
-```
+Make sure Ollama is running locally.
 
-Make sure Ollama is running.
-
-### 2. Build and launch
-
+2. Build and launch Wobbi
 From the repository root:
-
-```powershell
 dotnet restore Wobbi/Wobbi.csproj
 dotnet run --project Wobbi/Wobbi.csproj
-```
 
-Or open `Wobbi.slnx` in Visual Studio and run the Wobbi project.
+Or open Wobbi.slnx in Visual Studio and start the Wobbi project.
+💡 Wobbi's character animations, agenda, and other non-AI features do not require an Ollama reply. Local AI conversations require Ollama and the downloaded model to be available.
 
-## 💜 Using Wobbi
+🖱️ A few ways to interact
 
-- **Double-click:** switch between Full and Mini Mode.
-- **Single-click in Mini Mode:** open or focus the AI chat (after a short delay to distinguish double-clicks).
-- **Drag:** reposition Wobbi on the desktop.
-- **Right-click → Talk:** open the AI chat.
-- **Right-click → Pet:** trigger his happy reaction.
-- **Right-click → Sleep / Wake:** toggle sleep mode.
-- **Right-click → Appearance:** choose Classic or Lavender for Full Wobbi.
-- **Right-click → Personality:** choose Calm, Balanced or Playful.
-- **Right-click → Preferences:** toggle speech bubbles and reduced animations.
-- **Right-click → Quit:** exit the application.
-- **Chat window X:** hide chat without clearing the current conversation; reopening restores it while Wobbi is running.
-- **Hover and pat his forehead:** click for a happy pat, or hold for head scritchies.
+Action                                           Result
 
-The Mini character currently uses its own lavender chibi artwork, independently of the selected full-size appearance.
+Drag Wobbi                                       Move him around the desktop
+Double-click	                                   Switch between Full Mode and Mini Mode
+Single-click in Mini Mode                        Open or focus the chat
+Pat or hold on his head	                         Trigger petting or scritching animations
+Right-click → Talk	                             Open the chat window
+Right-click → Pet	                               Trigger a happy reaction
+Right-click → Sleep / Wake	                     Control sleep mode
+Right-click → Appearance / Personality	         Change Wobbi's look or behavior
+Right-click → Preferences	                       Adjust speech bubbles and animation preferences
+Right-click → Quit	                             Close Wobbi
 
-## 🔒 Privacy and data
+🔒 Privacy & local data
 
-Wobbi sends chat requests to **your local Ollama instance** at `http://127.0.0.1:11434/`. No paid cloud AI provider or API key is required for this setup.
+Wobbi's AI chat sends requests to your local Ollama server at http://127.0.0.1:11434/. The default setup does not send prompts to a paid cloud AI provider.
 
-- Recent chat context is held **in memory**, including while the chat window is hidden. It is **not preserved between application restarts**.
-- Appearance, personality, Mini Mode and visual preferences are stored locally in `%LOCALAPPDATA%\Wobbi\appearance.json`.
-- The notification dot indicates an unread AI reply; it is not yet a general reminder or alert system.
-- Downloading Ollama and the model requires internet access initially; subsequent model inference runs locally.
+- Chat context: stored in memory for the current session, not saved between app restarts.
+- Preferences: saved locally at %LOCALAPPDATA%\Wobbi\appearance.json.
+- Agenda events: saved locally at %LOCALAPPDATA%\Wobbi\agenda.json, with backup recovery logic.
+- Dota companion: uses GSI event data; it does not read Dota process memory, inject code, modify the client, automate gameplay, or access hidden information.
+- Initial setup: downloading Ollama and the model requires internet access; local AI inference does not require a cloud AI subscription.
 
-## 📋 Release notes
+🪐 Project status & roadmap
 
-See [CHANGELOG.md](CHANGELOG.md) for version history and the v0.4.0 changes.
+v0.5 is a release candidate and a learning/portfolio project, not a finished commercial assistant. The core companion, local AI chat, Mini Mode, agenda, and initial Dota GSI integration are implemented; some Dota edge cases and combined tests remain open.
 
-## 🪐 What's next?
+Ideas for future releases include saved notes and memory, additional productivity features, and post-match Dota 2 analysis using external data and local AI.
 
-Planned next steps include reminders and agenda integration, optional persistent memory, local notes and everyday productivity features. These are roadmap ideas, not currently shipped features.
+See the [changelog](CHANGELOG.md) for version-by-version details and known limitations.
 
-## 💜 About
+👩‍💻 For developers & recruiters
 
-Created by Susan Aben as a creative exploration of C#, WPF, local AI integration, interaction design and character animation.
+Wobbi is also a hands-on exploration of C#/.NET desktop development: WPF animation, event-driven UI behavior, local HTTP/JSON communication, settings persistence, scheduled reminders, and API-style integrations.
 
-*Small blob. Big personality.* ✨
+➡️ [Read Wobbi's C#/.NET Developer Case Study](Wobbi/README.md)
+
+💜 About
+
+Created by Susan Aben as a personal project combining software development, local AI, playful interaction design, and character animation.
+
+Small blob. Big personality. ✨
