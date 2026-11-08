@@ -24,6 +24,8 @@ No paid AI subscription or cloud API key is required for local conversations.
 
 ### ▶️ Watch Wobbi in action
 
+https://github.com/user-attachments/assets/8953889f-d263-49ac-ae99-bfcb7a64909b
+
 https://github.com/user-attachments/assets/451d0fe6-1634-4472-aa87-2f6ba91d56d3
 
 ---
