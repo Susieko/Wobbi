@@ -2,6 +2,115 @@
 
 All notable project changes are tracked here. Wobbi remains an experimental Windows desktop companion.
 
+# Wobbi — Changelog
+
+All notable changes to Wobbi are documented here.
+
+Wobbi is a customizable desktop companion built with C#, WPF and .NET, featuring personality-driven interactions, productivity tools and local AI integration.
+
+---
+
+## [0.5.0] — Release Candidate
+
+**Theme: Your Little Everyday Companion**
+
+Version 0.5 expands Wobbi beyond a desktop pet with two major additions: a personal Agenda and a Dota 2 Companion.
+
+### 📅 Added — Agenda
+
+- Weekly calendar with Monday through Sunday.
+- Custom month navigation and date selection.
+- Event creation, editing, deletion and details.
+- Scheduled events with starting and ending times.
+- Calendar starts at 08:00 for a cleaner daily overview.
+- Automatic reminders one hour before events.
+- Reminders when appointments begin.
+- Persistent reminder notifications until dismissed.
+- Integration with Mini Mode's notification badge.
+- Local event persistence between application sessions.
+- Non-modal reminder windows for a less disruptive experience.
+
+### 🎮 Added — Dota 2 Companion
+
+- Dota 2 Game State Integration (GSI) support.
+- Live detection of game phases and active matches.
+- Match ID tracking and session-state resets.
+- Local player kill and death detection.
+- Special reactions for three-kill and three-death streaks.
+- Victory and defeat commentary using reported match results.
+- Personality-specific dialogue for Calm, Balanced and Playful modes.
+- Commentary in Full Mode and Mini Mode.
+- Adjustable reaction frequency:
+  - Quiet — 30 seconds.
+  - Normal — 10 seconds.
+  - Chatty — 5 seconds.
+- Persistent commentary preferences.
+- Dota connection status in the right-click menu.
+- Debug-only reaction previews.
+- Improved handling for unknown game phases and missing post-game results.
+
+### 💜 Improved — Wobbi Experience
+
+- Reused existing speech bubbles for Dota commentary.
+- Added playful, contextual reactions without requiring AI generation for each event.
+- Added gameplay reaction cooldowns to reduce excessive commentary.
+- Added milestone reactions that can bypass the normal cooldown.
+- Improved match-state handling to avoid carrying statistics between different matches.
+- Preserved compatibility with Wobbi's existing appearance, personality, animation and Mini Mode systems.
+
+### 🔒 Safety and Compatibility
+
+The Dota Companion is designed to use officially supported GSI data.
+
+- No reading of Dota process memory.
+- No DLL injection or game-client modification.
+- No gameplay automation.
+- No use of information hidden from the player.
+- Wobbi remains a separate desktop application rather than an injected game overlay.
+
+### 🧪 Testing and Known Limitations
+
+The following checks remain pending before the final release:
+
+- Verify victory and defeat detection using a completed live match.
+- Verify reconnect handling and unusual match transitions.
+- Verify that Agenda reminders do not steal focus during gameplay.
+- Complete combined Agenda and Dota regression testing.
+
+Additional notes:
+
+- Some local and demo sessions may not provide a valid Match ID.
+- The post-game fallback depends on continued GSI updates.
+- GSI must be configured in Dota 2 before live tracking can work.
+- Post-match AI analysis is planned for v0.6 and is not included in v0.5.
+
+---
+
+## [0.4.1] — Desktop Pet Improvements
+
+- Added interactive head-patting and scritching.
+- Added the Cosmic appearance.
+- Improved Wobbi's facial expressions and animations.
+- Continued Mini Mode refinements.
+
+---
+
+## Coming Next — v0.6
+
+**Persistent Memory & Intelligent Match Analysis**
+
+Planned features:
+
+- Persistent memory and saved information.
+- Saved links and useful notes.
+- Post-match Dota 2 statistics through external APIs.
+- Local AI match reviews using Ollama.
+- Personality-driven gameplay analysis and coaching.
+
+---
+
+*Made with love, a little chaos, and plenty of purple hearts. 💜*
+
 ## [0.4.0] — 2026-10-29 — Mini Mode
 
 ### Added
