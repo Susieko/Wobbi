@@ -2,7 +2,7 @@
 
 **A tiny cosmic desktop companion with a surprisingly big personality.**
 
-**Current version: 0.4.1 — Cozy Companion Update (early prototype)**
+**Current version: 0.5.0 — Agenda & Dota Companion (Release Candidate)**
 
 ## 🎬 See Wobbi in action
 
@@ -17,50 +17,30 @@ No paid AI subscription or cloud API key is required.
 
 ## ✨ Features
 
-### New in 0.4 — Mini Mode
 
-- **Full and Mini modes** — switch between the full character and a tiny, face-only desktop companion by double-clicking.
-- **A home in the corner** — Wobbi launches at the bottom-right of the primary screen, and Mini Wobbi parks just above the taskbar. The window can still be dragged, and expanding restores the full-size character's previous position.
-- **Remembered size** — Mini/Full preference persists across restarts.
-- **Mini interactions** — single-click Mini Wobbi to open or focus chat; double-click to switch modes; drag to reposition.
-- **Mini expressions** — blinking and occasional left/right glances, with personality-dependent glance frequency and reduced-motion support.
-- **Unread reply badge** — a small notification dot appears in Mini Mode when a new AI answer arrives while the chat is not active. Opening chat clears the badge.
-- **Hide instead of forgetting** — closing the chat with X hides the window; reopening it restores the conversation while Wobbi remains running.
-- **Refreshed Lavender artwork** — updated character shading, highlights and expressions.
+### New in 0.5 — Agenda & Dota Companion 💜
 
-### Also included
+#### 📅 Personal Agenda
+- Weekly calendar with event creation, editing and deletion.
+- Custom month navigation and event details.
+- Reminders before appointments and at event start.
+- Persistent reminder notifications.
+- Integration with Mini Mode's notification badge.
 
-- **Two full-size appearances** — Classic and Lavender Wobbi, with your selection saved.
-- **Three AI personalities** — Calm, Balanced and Playful; switch during an open conversation.
-- **Personality-aware reactions** — different happy bounces, excited hops and curious tilts.
-- **Animated companion** — floating, breathing, blinking, dragging, and expressive faces.
-- **Sleep and pet interactions** — sleepy eyes and Z's; smiling, bouncing and floating hearts.
-- **Local AI chat** — Ollama with `qwen3:4b-instruct`, recent conversational context and AI-selected moods.
-- **Thinking and reply bubbles** — animated `.` → `..` → `...` while Ollama responds, followed by a short reply preview.
-- **Saved visual preferences** — show/hide speech bubbles and reduce animations.
-- **Custom Windows app icon** — chibi Wobbi.
+#### 🎮 Dota 2 Companion
+- Live match tracking through official Dota 2 GSI.
+- Kill and death reactions.
+- Special reactions for kill and death streaks.
+- Victory and defeat commentary.
+- Personality-specific dialogue.
+- Quiet, Normal and Chatty commentary settings.
+- Dota connection status indicator.
+- Match ID tracking and reconnect safeguards.
+- Debug-only reaction previews.
 
-### New in 0.4.1 — Cozy Companion Update 🐾
-
-#### Auto-Snooze
-- Wobbi automatically falls asleep after five minutes
-  of computer inactivity.
-- Returning to the computer gently wakes him up.
-- A small welcome-back animation and speech bubble
-  make his return extra adorable.
-- Auto-Snooze preferences persist between sessions.
-
-#### Head Scritchies
-- Hover over Wobbi's forehead to reveal a custom
-  patting-hand cursor.
-- Quick clicks trigger happy bounces and floating hearts.
-- Click and hold for affectionate head scritchies.
-- Wobbi closes his eyes, smiles and gently sways.
-- Releasing gives him a tiny contented bounce.
-- Sleeping Wobbi enjoys pats without waking up.
-- His sleepy smile lingers briefly after being petted.
-- Custom hover, pressed and holding cursor artwork.
-- Supports Classic, Lavender and Reduced Animations.
+**Note:** GSI requires separate configuration in Dota 2.
+Live match-result and reconnect edge cases are still
+undergoing final verification.
 
 All interactions work locally without an AI request.
 
